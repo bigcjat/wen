@@ -338,19 +338,19 @@ function updateProgressAndStatus() {
   // Update Bar 1: All Network Validators Version (matching screenshot top bar)
   if (currentVersionStats) {
     const pct1 = Math.round((currentVersionStats.updatedValidators / currentVersionStats.totalValidators) * 10000) / 100;
-    if (retroBar1Title) retroBar1Title.textContent = `Xrpld Validators   Ver ${reqVer}`;
+    if (retroBar1Title) retroBar1Title.textContent = `Xrpld Validators   Ver ${reqVer}+`;
     if (retroBar1Metric) retroBar1Metric.textContent = `${currentVersionStats.updatedValidators}/${currentVersionStats.totalValidators} - ${pct1}%`;
     if (retroBar1Fill) retroBar1Fill.style.width = `${pct1}%`;
 
     // Update Bar 2: All Network Nodes Version (matching screenshot middle bar)
     const pctNodes = Math.round((currentVersionStats.updatedNodes / currentVersionStats.totalNodes) * 10000) / 100;
-    if (retroNodesTitle) retroNodesTitle.textContent = `Xrpld Nodes   Ver ${reqVer}`;
+    if (retroNodesTitle) retroNodesTitle.textContent = `Xrpld Nodes   Ver ${reqVer}+`;
     if (retroNodesMetric) retroNodesMetric.textContent = `${currentVersionStats.updatedNodes}/${currentVersionStats.totalNodes} - ${pctNodes}%`;
     if (retroNodesFill) retroNodesFill.style.width = `${pctNodes}%`;
 
     // Update Bar 3: UNL Consensus Validators Version
     const pct2 = Math.round((currentVersionStats.updatedUnl / currentVersionStats.totalUnl) * 10000) / 100;
-    if (retroBar2Title) retroBar2Title.textContent = `UNL Validators   Ver ${reqVer}`;
+    if (retroBar2Title) retroBar2Title.textContent = `UNL Validators   Ver ${reqVer}+`;
     if (retroBar2Metric) retroBar2Metric.textContent = `${currentVersionStats.updatedUnl}/${currentVersionStats.totalUnl} - ${pct2}%`;
     if (progressFill) progressFill.style.width = `${pct2}%`;
   }
