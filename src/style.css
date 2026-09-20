@@ -393,14 +393,28 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.85rem 1.25rem;
   margin-bottom: 1.5rem;
 }
 
 .feature-meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.feature-headline {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.95rem, 2.8vw, 1.25rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .xls-badge,
@@ -421,6 +435,8 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .xls-badge-link:hover,
@@ -1289,6 +1305,15 @@ body {
     padding: 1rem 0.9rem;
     max-width: 100%;
     border-radius: var(--radius-md);
+  }
+
+  .hero-header {
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .feature-headline {
+    font-size: clamp(0.88rem, 4.2vw, 1.15rem);
   }
 
   .title-wen {
