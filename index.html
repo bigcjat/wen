@@ -2,9 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no" />
     <title>wen — XRPL Consensus & Amendment Radar</title>
     <meta name="description" content="Real-time consensus tracker for upcoming XRP Ledger (XRPL) amendments, votes, countdowns, and validator status." />
@@ -127,6 +125,19 @@
               <div class="segment-yes" id="segmentYes" style="width: 85.71%;" title="YES Votes">YES (85.7%)</div>
               <div class="segment-no" id="segmentNo" style="width: 14.29%;" title="NO / Veto Votes">NO (14.3%)</div>
               <div class="segment-unvoted" id="segmentUnvoted" style="width: 0%;" title="OUTDATED: Will be amendment blocked if activated">OUTDATED (0%)</div>
+              <!-- Dashed vertical consensus threshold line at 80% -->
+              <div class="retro-dashed-line"></div>
+            </div>
+
+            <!-- 80% CONSENSUS BRACKET (EXACT FROM SCREENSHOT) -->
+            <div class="retro-threshold-container">
+              <div class="retro-threshold-bracket-wrap">
+                <div class="retro-bracket"></div>
+                <div class="retro-bracket-text">
+                  <span class="retro-bracket-pct">80%</span> consensus
+                </div>
+                <div class="retro-bracket-sub">(kept for 2 weeks)</div>
+              </div>
             </div>
           </div>
 

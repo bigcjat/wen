@@ -33,12 +33,7 @@
 }
 
 html {
-  width: 100%;
-  max-width: 100%;
   overflow-x: hidden;
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
-  overscroll-behavior-x: none;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -47,18 +42,11 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  min-height: -webkit-fill-available;
   line-height: 1.5;
   background-image: 
     radial-gradient(ellipse 60% 40% at 50% 0%, rgba(47, 128, 237, 0.08), transparent);
   background-attachment: fixed;
-  width: 100%;
-  max-width: 100vw;
   overflow-x: hidden;
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
-  overscroll-behavior-x: none;
-  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   -webkit-font-smoothing: antialiased;
 }
@@ -630,7 +618,80 @@ body {
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 
-/* 80%+1 Target Indicator */
+/* 80%+1 Target Indicator (exact 2022 retro style from screenshot) */
+.retro-dashed-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 80%; /* 28/35 = 80% */
+  width: 0;
+  border-left: 2.5px dashed #0099ff;
+  box-shadow: 0 0 8px rgba(0, 153, 255, 0.7);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.retro-threshold-container {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+  min-height: 48px;
+}
+
+.retro-threshold-bracket-wrap {
+  position: absolute;
+  left: 80%;
+  transform: translateX(-50%);
+  width: 175px;
+  max-width: 50vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.retro-bracket {
+  width: 100%;
+  height: 8px;
+  border-top: 2px solid #0099ff;
+  border-left: 2px solid #0099ff;
+  border-right: 2px solid #0099ff;
+  margin-bottom: 5px;
+  box-shadow: 0 0 8px rgba(0, 153, 255, 0.4);
+}
+
+.retro-bracket-text {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.55rem, 1.8vw, 0.72rem);
+  color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.retro-bracket-pct {
+  color: #0099ff;
+  text-shadow: 0 0 8px rgba(0, 153, 255, 0.7);
+}
+
+.retro-bracket-sub {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.44rem, 1.4vw, 0.55rem);
+  color: #ffffff;
+  margin-top: 3px;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 480px) {
+  .retro-threshold-bracket-wrap {
+    left: auto;
+    right: 0;
+    transform: none;
+    width: 145px;
+  }
+}
+
 .consensus-marker {
   position: absolute;
   top: 0;
@@ -1068,17 +1129,6 @@ body {
    MOBILE RESPONSIVENESS & APP-LIKE OPTIMIZATION
 ----------------------------------- */
 @media (max-width: 640px) {
-  html, body {
-    width: 100vw;
-    max-width: 100vw;
-    overflow-x: hidden;
-    position: relative;
-    overscroll-behavior: none;
-    overscroll-behavior-y: none;
-    overscroll-behavior-x: none;
-    touch-action: pan-y;
-  }
-
   .container {
     padding: 1.25rem 0.85rem 3.5rem;
     max-width: 100vw;
