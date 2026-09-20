@@ -24,7 +24,6 @@ const dropdownMenu = document.getElementById('dropdownMenu') as HTMLDivElement;
 const selectedFeatureName = document.getElementById('selectedFeatureName') as HTMLSpanElement;
 const selectedXlsTag = document.getElementById('selectedXlsTag') as HTMLSpanElement;
 const activeCountBadge = document.getElementById('activeCountBadge') as HTMLSpanElement;
-const pillsStrip = document.getElementById('pillsStrip') as HTMLDivElement;
 const amendmentsOverviewGrid = document.getElementById('amendmentsOverviewGrid') as HTMLDivElement;
 const overviewBadge = document.getElementById('overviewBadge') as HTMLSpanElement;
 
@@ -128,7 +127,6 @@ async function init() {
   if (overviewBadge) overviewBadge.textContent = `${activeAmendments.length} Active`;
 
   renderDropdownMenu();
-  renderPills();
   renderOverviewGrid();
 
   // Select requested amendment from URL (?XLS=56, ?XLS=fixCleanup3_4_0), otherwise default to first active amendment
@@ -230,31 +228,6 @@ function renderDropdownMenu() {
   });
 }
 
-function renderPills() {
-  pillsStrip.innerHTML = '';
-
-  activeAmendments.forEach((amendment) => {
-    const isSelected = selectedAmendment?.name === amendment.name;
-    const isJustActivated = amendment.isJustActivated || amendment.enabled;
-    const isActivating = amendment.majority != null && !isJustActivated;
-    const pill = document.createElement('button');
-    pill.className = `feature-pill ${isSelected ? 'active' : ''} ${isJustActivated ? 'just-activated' : (isActivating ? 'activating' : '')}`;
-    pill.setAttribute('role', 'tab');
-    pill.setAttribute('aria-selected', String(isSelected));
-
-    pill.innerHTML = `
-      <span>${isJustActivated ? '🎉 ' : ''}${escapeHtml(amendment.name)}</span>
-      <span class="pill-count">${isJustActivated ? '100%' : `${amendment.count}/${amendment.threshold}`}</span>
-    `;
-
-    pill.addEventListener('click', () => {
-      selectAmendment(amendment);
-    });
-
-    pillsStrip.appendChild(pill);
-  });
-}
-
 function renderOverviewGrid() {
   amendmentsOverviewGrid.innerHTML = '';
 
@@ -330,7 +303,6 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
   }
 
   renderDropdownMenu();
-  renderPills();
   renderOverviewGrid();
 
   // Dynamically derive retro header and subtitle directly from amendment name
@@ -340,8 +312,18 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
 
   if (titleWenTarget) {
     titleWenTarget.textContent = featureWord;
+    if (featureWord.length > 14) {
+      titleWenTarget.className = 'title-wen-target size-sm';
+    } else if (featureWord.length > 9) {
+      titleWenTarget.className = 'title-wen-target size-md';
+    } else if (featureWord.length > 6) {
+      titleWenTarget.className = 'title-wen-target size-lg';
+    } else {
+      titleWenTarget.className = 'title-wen-target size-xl';
+    }
   } else if (appTitle) {
-    appTitle.innerHTML = `<span class="title-wen-prefix">wen</span><span class="title-wen-target">${escapeHtml(featureWord)}</span>`;
+    const sizeClass = featureWord.length > 14 ? 'size-sm' : (featureWord.length > 9 ? 'size-md' : (featureWord.length > 6 ? 'size-lg' : 'size-xl'));
+    appTitle.innerHTML = `<span class="title-wen-prefix">wen</span><span class="title-wen-target ${sizeClass}">${escapeHtml(featureWord)}</span>`;
   }
   if (subtitleXls) subtitleXls.textContent = amendment.xls ? amendment.xls.replace('-', '') : 'XRPL';
   if (subtitleFeature) subtitleFeature.textContent = featureTitle;
@@ -526,7 +508,7 @@ function updateProgressAndStatus() {
     calloutTitle.textContent = '🎉 Amendment Officially Activated on Mainnet!';
     calloutSubtitle.textContent = selectedAmendment.enabled_on
       ? `Successfully enabled on ${new Date(selectedAmendment.enabled_on).toUTCString()} (Ledger #${selectedAmendment.enabled_in_ledger || 'confirmed'}). Showing for 48 hours.`
-      : 'This amendment has cleared the 14-day lock and is now permanently active on the XRPL!';
+      : 'This amendment has cleared the 14-day countdown and is now permanently active on the XRPL!';
     countdownBox.style.display = 'none';
     stopCountdown();
 
@@ -543,7 +525,7 @@ function updateProgressAndStatus() {
     // Update Status Pill
     if (isActivating) {
       featureStatusPill.className = 'status-pill activating';
-      featureStatusText.textContent = 'ACTIVATING (14-DAY LOCK)';
+      featureStatusText.textContent = 'ACTIVATING (14-DAY COUNTDOWN)';
       statusCallout.className = 'status-callout activating';
       calloutIcon.textContent = '⚡';
       calloutTitle.textContent = 'Majority Achieved: Activation Countdown Active';
@@ -560,7 +542,7 @@ function updateProgressAndStatus() {
       calloutTitle.textContent = needed > 0 
         ? `Needs ${needed} More Vote${needed > 1 ? 's' : ''} to Reach 80% Consensus`
         : 'At Threshold: Awaiting Flag Ledger';
-      calloutSubtitle.textContent = `Current tally is ${count} of ${total} validators. Once 28 votes (>80%) are maintained, a 14-day lock begins.`;
+      calloutSubtitle.textContent = `Current tally is ${count} of ${total} validators. Once 28 votes (>80%) are maintained, a 14-day countdown begins.`;
       countdownBox.style.display = 'none';
       stopCountdown();
     }
