@@ -312,7 +312,8 @@ async function selectAmendment(amendment: RawAmendment) {
     currentDetails = await fetchAmendmentDetails(amendment.name);
   } catch (err) {
     console.error('Error fetching amendment details', err);
-    currentDetails = null;
+    displayFatalError(new Error(`Failed to load live vote breakdown for ${amendment.name}: ${err instanceof Error ? err.message : String(err)}`));
+    return;
   }
 
   // Calculate software versions across all validators and UNL
@@ -320,7 +321,8 @@ async function selectAmendment(amendment: RawAmendment) {
     currentVersionStats = await calculateVersionStats(reqVer);
   } catch (err) {
     console.error('Error calculating version stats', err);
-    currentVersionStats = null;
+    displayFatalError(new Error(`Failed to calculate live node/validator version telemetry: ${err instanceof Error ? err.message : String(err)}`));
+    return;
   }
 
   // Trigger pixel-by-pixel stepped arcade filling animation
