@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap');
 
 :root {
   --bg-primary: #121820;
@@ -22,7 +22,6 @@
 
   --font-pixel: 'Press Start 2P', monospace;
   --font-silkscreen: 'Silkscreen', cursive, monospace;
-  --font-mono: 'JetBrains Mono', monospace;
 }
 
 *, *::before, *::after {
@@ -152,70 +151,11 @@ body {
   background: rgba(0, 240, 255, 0.12);
   color: var(--accent-cyan);
   border: 1px solid rgba(0, 240, 255, 0.3);
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.6rem;
   border-radius: var(--radius-full);
-  font-size: 0.72rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-
-/* Quick Switcher Pills */
-.pills-scroll-wrap {
-  margin-top: 0.85rem;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.pills-strip {
-  display: flex;
-  gap: 0.5rem;
-  width: max-content;
-}
-
-.feature-pill {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-full);
-  padding: 0.38rem 0.85rem;
-  color: var(--text-secondary);
-  font-family: var(--font-main);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.feature-pill:hover {
-  border-color: rgba(0, 240, 255, 0.4);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-}
-
-.feature-pill.active {
-  background: rgba(0, 240, 255, 0.12);
-  border-color: var(--accent-cyan);
-  color: #ffffff;
-  box-shadow: 0 0 14px var(--accent-cyan-glow);
-}
-
-.feature-pill .pill-count {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.feature-pill.activating .pill-count {
-  background: rgba(16, 185, 129, 0.25);
-  color: var(--accent-emerald);
+  font-size: 0.65rem;
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
 }
 
 .dropdown-trigger {
@@ -227,7 +167,7 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
-  font-family: var(--font-main);
+  font-family: var(--font-silkscreen);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -260,11 +200,12 @@ body {
 }
 
 .feature-tag {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-family: var(--font-pixel);
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--accent-cyan);
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .feature-name-display {
@@ -328,7 +269,7 @@ body {
   justify-content: space-between;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-family: var(--font-main);
+  font-family: var(--font-silkscreen);
   text-align: left;
 }
 
@@ -354,7 +295,7 @@ body {
 .item-sub {
   font-size: 0.75rem;
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-silkscreen);
 }
 
 .status-badge-small {
@@ -521,7 +462,7 @@ body {
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.72rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-silkscreen);
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -923,7 +864,9 @@ body {
 #blockedVersionTag {
   color: #38bdf8;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  text-transform: uppercase;
 }
 
 /* ----------------------------------
@@ -979,9 +922,9 @@ body {
 }
 
 .time-num {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
   color: var(--accent-emerald);
 }
 
@@ -1015,14 +958,17 @@ body {
 
 .active-feature-highlight {
   color: var(--accent-cyan);
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
+  font-size: clamp(0.68rem, 1.8vw, 0.82rem);
+  text-transform: uppercase;
   background: rgba(0, 240, 255, 0.1);
-  padding: 0.2rem 0.65rem;
+  padding: 0.25rem 0.65rem;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(0, 240, 255, 0.3);
-  font-size: 0.9em;
-  font-weight: 700;
+  letter-spacing: 0.04em;
   box-shadow: 0 0 12px var(--accent-cyan-glow);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .tab-group {
@@ -1037,9 +983,10 @@ body {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-family: var(--font-main);
+  font-family: var(--font-pixel);
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -1135,7 +1082,7 @@ body {
 
 .val-sub {
   font-size: 0.65rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-silkscreen);
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -1143,9 +1090,10 @@ body {
 }
 
 .val-badge {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-full);
   letter-spacing: 0.03em;
@@ -1238,7 +1186,7 @@ body {
 
 .ov-sub {
   font-size: 0.72rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-silkscreen);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1249,7 +1197,7 @@ body {
   justify-content: space-between;
   align-items: baseline;
   margin: 0.6rem 0 0.3rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-silkscreen);
   font-size: 0.85rem;
 }
 
