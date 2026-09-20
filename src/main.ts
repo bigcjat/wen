@@ -55,7 +55,6 @@ const blockedVersionTag = document.getElementById('blockedVersionTag') as HTMLSp
 const blockedVersionNotice = document.getElementById('blockedVersionNotice') as HTMLSpanElement;
 
 const statusCallout = document.getElementById('statusCallout') as HTMLDivElement;
-const calloutIcon = document.getElementById('calloutIcon') as HTMLDivElement;
 const calloutTitle = document.getElementById('calloutTitle') as HTMLHeadingElement;
 const calloutSubtitle = document.getElementById('calloutSubtitle') as HTMLParagraphElement;
 const countdownBox = document.getElementById('countdownBox') as HTMLDivElement;
@@ -511,8 +510,7 @@ function updateProgressAndStatus() {
     progressFill.className = 'retro-fill just-activated';
 
     statusCallout.className = 'status-callout activating';
-    calloutIcon.textContent = '🎊';
-    calloutTitle.textContent = '🎉 Amendment Officially Activated on Mainnet!';
+    calloutTitle.textContent = 'Amendment Officially Activated on Mainnet!';
     calloutSubtitle.textContent = selectedAmendment.enabled_on
       ? `Successfully enabled on ${new Date(selectedAmendment.enabled_on).toUTCString()} (Ledger #${selectedAmendment.enabled_in_ledger || 'confirmed'}). Showing for 48 hours.`
       : 'This amendment has cleared the 14-day countdown and is now permanently active on the XRPL!';
@@ -531,14 +529,12 @@ function updateProgressAndStatus() {
 
     if (isActivating) {
       statusCallout.className = 'status-callout activating';
-      calloutIcon.textContent = '⚡';
       calloutTitle.textContent = 'Majority Achieved: Activation Countdown Active';
       calloutSubtitle.textContent = 'This feature has sustained >80% validator support and is scheduled to activate on-ledger.';
       countdownBox.style.display = 'flex';
       startCountdown(majority!);
     } else {
       statusCallout.className = 'status-callout voting';
-      calloutIcon.textContent = '🗳️';
       
       const needed = Math.max(0, threshold - count);
       calloutTitle.textContent = needed > 0 

@@ -949,21 +949,12 @@ body {
 }
 
 .callout-heading {
-  display: block;
   font-family: var(--font-pixel);
-  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  font-size: clamp(0.72rem, 2.2vw, 0.95rem);
   font-weight: 400;
   margin-bottom: 0.35rem;
-  line-height: 1.5;
+  line-height: 1.45;
   color: #ffffff;
-}
-
-.callout-icon {
-  display: inline;
-  font-size: 1.15em;
-  line-height: 1;
-  margin-right: 0.45rem;
-  vertical-align: baseline;
 }
 
 .callout-text p {
