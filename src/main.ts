@@ -1,6 +1,6 @@
 import './style.css';
 import type { RawAmendment, DetailedAmendment, EnrichedValidator } from './types';
-import { fetchAllAmendments, fetchAmendmentDetails, FEATURE_INFO, getXlsUrl } from './services/api';
+import { fetchAllAmendments, fetchAmendmentDetails, FEATURE_INFO, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
 import { getFaviconCandidates, getFallbackMonogram } from './services/favicon';
 import { fireConfetti } from './services/confetti';
 
@@ -9,10 +9,28 @@ let activeAmendments: RawAmendment[] = [];
 let selectedAmendment: RawAmendment | null = null;
 let currentDetails: DetailedAmendment | null = null;
 let currentValidators: EnrichedValidator[] = [];
+let currentVersionStats: VersionStats | null = null;
 let currentFilter: 'ALL' | 'YEA' | 'NAY' = 'ALL';
 let countdownInterval: number | null = null;
 
+const RETRO_NAMES: Record<string, { wen: string; title: string }> = {
+  BatchV1_1: { wen: 'wen batch?', title: 'ATOMIC BATCH' },
+  PermissionDelegationV1_1: { wen: 'wen delegate?', title: 'PERMISSION DELEGATION' },
+  SingleAssetVault: { wen: 'wen vault?', title: 'SINGLE ASSET VAULT' },
+  ConfidentialTransfer: { wen: 'wen privacy?', title: 'CONFIDENTIAL TRANSFERS' },
+  DynamicMPT: { wen: 'wen mpt?', title: 'DYNAMIC MPT' },
+  LendingProtocolV1_1: { wen: 'wen lend?', title: 'LENDING PROTOCOL' },
+  Sponsor: { wen: 'wen sponsor?', title: 'RESERVE SPONSOR' },
+  XChainBridge: { wen: 'wen bridge?', title: 'CROSS-CHAIN BRIDGE' },
+  fixCleanup3_4_0: { wen: 'wen 3.4.0?', title: 'CLEANUP PATCH' },
+  fixXChainRewardRounding: { wen: 'wen fix?', title: 'REWARD ROUNDING FIX' }
+};
+
 // DOM Elements
+const appTitle = document.getElementById('appTitle') as HTMLHeadingElement;
+const subtitleXls = document.getElementById('subtitleXls') as HTMLSpanElement;
+const subtitleFeature = document.getElementById('subtitleFeature') as HTMLSpanElement;
+
 const dropdownTrigger = document.getElementById('dropdownTrigger') as HTMLButtonElement;
 const dropdownMenu = document.getElementById('dropdownMenu') as HTMLDivElement;
 const selectedFeatureName = document.getElementById('selectedFeatureName') as HTMLSpanElement;
@@ -32,6 +50,20 @@ const featureDescription = document.getElementById('featureDescription') as HTML
 const voteCount = document.getElementById('voteCount') as HTMLSpanElement;
 const percentageDisplay = document.getElementById('percentageDisplay') as HTMLDivElement;
 const progressFill = document.getElementById('progressFill') as HTMLDivElement;
+
+const retroBar1Title = document.getElementById('retroBar1Title') as HTMLSpanElement;
+const retroBar1Metric = document.getElementById('retroBar1Metric') as HTMLSpanElement;
+const retroBar1Fill = document.getElementById('retroBar1Fill') as HTMLDivElement;
+const retroNodesTitle = document.getElementById('retroNodesTitle') as HTMLSpanElement;
+const retroNodesMetric = document.getElementById('retroNodesMetric') as HTMLSpanElement;
+const retroNodesFill = document.getElementById('retroNodesFill') as HTMLDivElement;
+const retroBar2Title = document.getElementById('retroBar2Title') as HTMLSpanElement;
+const retroBar2Metric = document.getElementById('retroBar2Metric') as HTMLSpanElement;
+const retroAmendmentLabel = document.getElementById('retroAmendmentLabel') as HTMLSpanElement;
+const segmentYes = document.getElementById('segmentYes') as HTMLDivElement;
+const segmentNo = document.getElementById('segmentNo') as HTMLDivElement;
+const segmentUnvoted = document.getElementById('segmentUnvoted') as HTMLDivElement;
+const blockedVersionTag = document.getElementById('blockedVersionTag') as HTMLSpanElement;
 
 const statusCallout = document.getElementById('statusCallout') as HTMLDivElement;
 const calloutIcon = document.getElementById('calloutIcon') as HTMLDivElement;
@@ -217,6 +249,15 @@ async function selectAmendment(amendment: RawAmendment) {
   renderPills();
   renderOverviewGrid();
 
+  // Update Retro Title & Subtitle (matching the screenshot style!)
+  const retroInfo = RETRO_NAMES[amendment.name] || {
+    wen: `wen ${amendment.name.toLowerCase().slice(0, 8)}?`,
+    title: amendment.name.toUpperCase()
+  };
+  if (appTitle) appTitle.textContent = retroInfo.wen;
+  if (subtitleXls) subtitleXls.textContent = amendment.xls ? amendment.xls.replace('-', '') : 'XRPL';
+  if (subtitleFeature) subtitleFeature.textContent = retroInfo.title;
+
   // Update dropdown button header
   selectedFeatureName.textContent = amendment.name;
   selectedXlsTag.textContent = amendment.xls || 'AMENDMENT';
@@ -258,12 +299,22 @@ async function selectAmendment(amendment: RawAmendment) {
     featureDescription.textContent = `XRPL protocol amendment ${amendment.name}. Requires 80%+1 validator consensus for 14 continuous days.`;
   }
 
+  const reqVer = amendment.introduced || '3.3.0';
+
   // Fetch full vote details (who is voting yea and nay)
   try {
     currentDetails = await fetchAmendmentDetails(amendment.name);
   } catch (err) {
     console.error('Error fetching amendment details', err);
     currentDetails = null;
+  }
+
+  // Calculate software versions across all validators and UNL
+  try {
+    currentVersionStats = await calculateVersionStats(reqVer);
+  } catch (err) {
+    console.error('Error calculating version stats', err);
+    currentVersionStats = null;
   }
 
   updateProgressAndStatus();
@@ -274,6 +325,7 @@ async function selectAmendment(amendment: RawAmendment) {
 function updateProgressAndStatus() {
   if (!selectedAmendment) return;
 
+  const reqVer = selectedAmendment.introduced || '3.3.0';
   const count = currentDetails?.count ?? selectedAmendment.count;
   const total = currentDetails?.validations ?? selectedAmendment.validations ?? 35;
   const threshold = currentDetails?.threshold ?? selectedAmendment.threshold ?? 28;
@@ -283,13 +335,61 @@ function updateProgressAndStatus() {
   const percentage = Math.round((count / total) * 1000) / 10;
   const isActivating = majority != null && !isJustActivated;
 
-  // Update Progress Bar
+  // Update Bar 1: All Network Validators Version (matching screenshot top bar)
+  if (currentVersionStats) {
+    const pct1 = Math.round((currentVersionStats.updatedValidators / currentVersionStats.totalValidators) * 10000) / 100;
+    if (retroBar1Title) retroBar1Title.textContent = `Xrpld Validators   Ver ${reqVer}`;
+    if (retroBar1Metric) retroBar1Metric.textContent = `${currentVersionStats.updatedValidators}/${currentVersionStats.totalValidators} - ${pct1}%`;
+    if (retroBar1Fill) retroBar1Fill.style.width = `${pct1}%`;
+
+    // Update Bar 2: All Network Nodes Version (matching screenshot middle bar)
+    const pctNodes = Math.round((currentVersionStats.updatedNodes / currentVersionStats.totalNodes) * 10000) / 100;
+    if (retroNodesTitle) retroNodesTitle.textContent = `Xrpld Nodes   Ver ${reqVer}`;
+    if (retroNodesMetric) retroNodesMetric.textContent = `${currentVersionStats.updatedNodes}/${currentVersionStats.totalNodes} - ${pctNodes}%`;
+    if (retroNodesFill) retroNodesFill.style.width = `${pctNodes}%`;
+
+    // Update Bar 3: UNL Consensus Validators Version
+    const pct2 = Math.round((currentVersionStats.updatedUnl / currentVersionStats.totalUnl) * 10000) / 100;
+    if (retroBar2Title) retroBar2Title.textContent = `UNL Validators   Ver ${reqVer}`;
+    if (retroBar2Metric) retroBar2Metric.textContent = `${currentVersionStats.updatedUnl}/${currentVersionStats.totalUnl} - ${pct2}%`;
+    if (progressFill) progressFill.style.width = `${pct2}%`;
+  }
+
+  // Update Bar 3: Segmented Vote Breakdown (matching screenshot bottom bar)
+  if (retroAmendmentLabel) {
+    retroAmendmentLabel.textContent = `${selectedAmendment.xls ? selectedAmendment.xls.replace('-', '') : 'XRPL'}  ${selectedAmendment.name}`;
+  }
+
+  const outdatedCount = isJustActivated ? 0 : (currentVersionStats ? currentVersionStats.outdatedUnl : 0);
+  const yeaCount = isJustActivated ? total : (currentDetails?.voters ? currentDetails.voters.length : count);
+  const nayCount = isJustActivated ? 0 : (currentDetails?.vetoers ? currentDetails.vetoers.length : Math.max(0, total - yeaCount - outdatedCount));
+
+  const pctYea = isJustActivated ? 100 : Math.round((yeaCount / total) * 1000) / 10;
+  const pctNay = isJustActivated ? 0 : Math.round((nayCount / total) * 1000) / 10;
+  const pctOutdated = isJustActivated ? 0 : Math.round((outdatedCount / total) * 1000) / 10;
+
+  if (segmentYes) {
+    segmentYes.style.width = `${pctYea}%`;
+    segmentYes.textContent = pctYea >= 12 ? `YES (${pctYea}%)` : (pctYea > 0 ? `${pctYea}%` : '');
+  }
+  if (segmentNo) {
+    segmentNo.style.width = `${pctNay}%`;
+    segmentNo.textContent = pctNay >= 12 ? `NO (${pctNay}%)` : (pctNay > 0 ? `${pctNay}%` : '');
+  }
+  if (segmentUnvoted) {
+    segmentUnvoted.style.width = `${pctOutdated}%`;
+    segmentUnvoted.textContent = pctOutdated >= 15 ? `OUTDATED (${pctOutdated}%)` : (pctOutdated > 0 ? `${pctOutdated}%` : '');
+  }
+
+  if (blockedVersionTag) {
+    blockedVersionTag.textContent = `Ver ${reqVer}`;
+  }
+
   voteCount.textContent = String(count);
 
   if (isJustActivated) {
-    percentageDisplay.textContent = '100% ACTIVATED';
-    progressFill.style.width = '100%';
-    progressFill.className = 'progress-fill just-activated';
+    percentageDisplay.textContent = '100% YES';
+    progressFill.className = 'retro-fill just-activated';
 
     featureStatusPill.className = 'status-pill just-activated';
     featureStatusText.textContent = '🎉 JUST ACTIVATED (<48H)';
@@ -302,16 +402,14 @@ function updateProgressAndStatus() {
     countdownBox.style.display = 'none';
     stopCountdown();
 
-    // Fire celebratory confetti when viewing an amendment activated within 48h!
     fireConfetti(140);
   } else {
-    percentageDisplay.textContent = `${percentage}%`;
-    progressFill.style.width = `${Math.min(100, percentage)}%`;
+    percentageDisplay.textContent = `${pctYea}% YES`;
 
     if (percentage >= 80) {
-      progressFill.className = 'progress-fill majority';
+      progressFill.className = 'retro-fill majority';
     } else {
-      progressFill.className = 'progress-fill';
+      progressFill.className = 'retro-fill';
     }
 
     // Update Status Pill

@@ -1,33 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
-  --bg-primary: #080c14;
-  --bg-secondary: #0f172a;
-  --bg-card: rgba(15, 23, 42, 0.72);
-  --bg-card-hover: rgba(30, 41, 59, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(0, 240, 255, 0.5);
+  --bg-primary: #121820;
+  --bg-secondary: #1a222c;
+  --bg-card: #161e27;
+  --bg-card-hover: #1e2835;
+  --border-white-glow: #ffffff;
+  --border-subtle: rgba(255, 255, 255, 0.15);
   
-  --accent-cyan: #00f0ff;
-  --accent-cyan-glow: rgba(0, 240, 255, 0.35);
-  --accent-emerald: #10b981;
-  --accent-emerald-glow: rgba(16, 185, 129, 0.35);
+  --accent-blue: #2f80ed;
+  --accent-blue-light: #4ea8de;
+  --accent-blue-glow: rgba(47, 128, 237, 0.6);
+  --accent-cyan: #38bdf8;
+  --accent-green: #10b981;
   --accent-amber: #f59e0b;
-  --accent-amber-glow: rgba(245, 158, 11, 0.35);
-  --accent-rose: #f43f5e;
-  --accent-rose-glow: rgba(244, 63, 94, 0.35);
+  --accent-gray: #374151;
 
-  --text-primary: #f8fafc;
+  --text-primary: #ffffff;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-silkscreen: 'Silkscreen', cursive, monospace;
   --font-mono: 'JetBrains Mono', monospace;
-
-  --radius-lg: 20px;
-  --radius-md: 14px;
-  --radius-sm: 8px;
-  --radius-full: 9999px;
 }
 
 * {
@@ -37,28 +32,26 @@
 }
 
 body {
-  font-family: var(--font-main);
+  font-family: var(--font-silkscreen);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 240, 255, 0.12), transparent),
-    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08), transparent),
-    radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.08), transparent);
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(47, 128, 237, 0.08), transparent);
   background-attachment: fixed;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  max-width: 960px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2.5rem 1.25rem 5rem;
 }
 
 /* ----------------------------------
-   HEADER / BRANDING
+   RETRO HEADER / WEN
 ----------------------------------- */
 .header {
   text-align: center;
@@ -66,24 +59,31 @@ body {
 }
 
 .title-wen {
-  font-size: clamp(3.8rem, 12vw, 6.5rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
-  background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 85%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 40px var(--accent-cyan-glow);
-  margin-bottom: 0.4rem;
+  font-family: var(--font-pixel);
+  font-size: clamp(2.2rem, 7vw, 4.2rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.45);
+  margin-bottom: 0.8rem;
   user-select: none;
+  text-transform: lowercase;
 }
 
 .subtitle {
-  color: var(--text-secondary);
-  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
-  font-weight: 400;
-  max-width: 540px;
+  font-family: var(--font-silkscreen);
+  color: #ffffff;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   margin: 0 auto;
+}
+
+.subtitle .xls-highlight {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 12px var(--accent-blue-glow);
 }
 
 /* ----------------------------------
@@ -495,142 +495,175 @@ body {
 }
 
 /* ----------------------------------
-   CONSENSUS PROGRESS BAR & 80%+1 PIN
+   RETRO PROGRESS BARS (EXACT STYLE FROM SCREENSHOT)
 ----------------------------------- */
-.progress-container {
-  margin: 2rem 0 2.5rem;
+.retro-bars-section {
+  margin: 1.5rem 0 2rem;
+}
+
+.retro-bar-block {
   position: relative;
 }
 
-.progress-header {
+.retro-bar-label {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.72rem, 1.8vw, 0.95rem);
+  font-weight: 400;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 0.75rem;
+  align-items: baseline;
+  color: #ffffff;
+  margin-bottom: 0.65rem;
+  letter-spacing: -0.01em;
 }
 
-.progress-label-main {
+.retro-metric {
+  font-family: var(--font-pixel);
+  color: #4ea8de;
+  font-size: 0.85em;
+}
+
+.retro-bar-frame {
+  position: relative;
+  height: 48px;
+  background: #0b0f15;
+  border: 3.5px solid var(--border-white-glow);
+  border-radius: 4px;
+  box-shadow: 
+    0 0 16px rgba(255, 255, 255, 0.8),
+    0 0 32px rgba(255, 255, 255, 0.35),
+    inset 0 0 10px rgba(0, 0, 0, 0.7);
+  padding: 3px;
   display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
-.progress-caption {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.vote-tally-big {
-  font-size: 1.8rem;
-  font-weight: 800;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-}
-
-.vote-tally-big span {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.consensus-percentage {
-  font-size: 1.4rem;
-  font-weight: 800;
-  font-family: var(--font-mono);
-  color: var(--accent-cyan);
-}
-
-.progress-track-wrapper {
-  position: relative;
-  height: 28px;
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: var(--radius-full);
-  padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-
-.progress-fill {
+.retro-fill {
   height: 100%;
-  border-radius: var(--radius-full);
-  background: linear-gradient(90deg, #0ea5e9, var(--accent-cyan));
-  box-shadow: 0 0 20px var(--accent-cyan-glow);
-  width: 0%;
-  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  background: var(--accent-blue);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px var(--accent-blue-glow);
 }
 
-.progress-fill.majority {
-  background: linear-gradient(90deg, #059669, var(--accent-emerald));
-  box-shadow: 0 0 24px var(--accent-emerald-glow);
+.retro-fill.majority {
+  background: #2563eb;
 }
 
-.progress-fill.just-activated {
-  background: linear-gradient(90deg, #10b981, #f59e0b, #ec4899);
-  box-shadow: 0 0 28px rgba(245, 158, 11, 0.5);
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease infinite;
+.retro-fill.just-activated {
+  background: linear-gradient(90deg, #10b981, #f59e0b);
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* THE SEGMENTED PROGRESS BAR FROM SCREENSHOT */
+.segmented-frame {
+  padding: 0;
+  border-radius: 4px;
 }
 
-/* The Consensus 80%+1 Indicator Marker */
+.segment-yes {
+  height: 100%;
+  background: #2f80ed;
+  color: #ffffff;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.6s ease;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.segment-no {
+  height: 100%;
+  background: #475569;
+  color: #ffffff;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.6s ease;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.segment-unvoted {
+  height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #1e293b,
+    #1e293b 10px,
+    #2f80ed 10px,
+    #2f80ed 20px
+  );
+  color: #ffffff;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.6rem, 1.4vw, 0.75rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.6s ease;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* 80%+1 Target Indicator */
 .consensus-marker {
   position: absolute;
-  top: -12px;
-  bottom: -12px;
-  left: 80%; /* 28/35 = 80.0% */
-  width: 2px;
+  top: 0;
+  bottom: 0;
+  left: 80%; /* 28/35 = 80% */
+  width: 3px;
   background: #ffffff;
-  box-shadow: 0 0 12px #ffffff, 0 0 24px var(--accent-cyan);
+  box-shadow: 0 0 10px #ffffff, 0 0 18px var(--accent-blue);
   z-index: 10;
   pointer-events: none;
 }
 
 .consensus-flag {
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.25rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
+  transform: translate(-50%, -50%);
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 0.15rem 0.35rem;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
   color: #ffffff;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.amendment-blocked-warning {
+  margin-top: 1.4rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1.5px solid rgba(245, 158, 11, 0.35);
+  border-radius: 4px;
+  padding: 0.8rem 1.1rem;
+  font-family: var(--font-silkscreen);
+  font-size: 0.8rem;
+  color: #fde68a;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.75rem;
+  line-height: 1.5;
 }
 
-.consensus-flag::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 4px 4px 0 4px;
-  border-style: solid;
-  border-color: #1e293b transparent transparent transparent;
-}
-
-.progress-markers-bar {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.5rem;
+.amendment-blocked-warning b {
+  color: #fbbf24;
+  font-family: var(--font-pixel);
   font-size: 0.72rem;
+  letter-spacing: -0.02em;
+}
+
+#blockedVersionTag {
+  color: #38bdf8;
+  font-weight: 700;
   font-family: var(--font-mono);
-  color: var(--text-muted);
 }
 
 /* ----------------------------------

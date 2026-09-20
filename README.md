@@ -1,17 +1,21 @@
 # wen — XRPL Consensus & Amendment Radar
 
-> **Live consensus tracker for upcoming XRP Ledger (XRPL) features, amendments, validator votes, and activation countdowns.**
+> **Live retro 8-bit consensus tracker for upcoming XRP Ledger (XRPL) features, amendments, xrpld validator upgrade status, and activation countdowns.**
 
-Built with **TypeScript**, **Vite**, and mobile-first dark glassmorphic styling.
+Built with **TypeScript**, **Vite**, and authentic pixel-arcade styling inspired by the classic "wen mint?" tracker.
 
 ---
 
 ## Features
 
-- ⚡ **Consensus Progress Bar**: Direct visual indicator line and pin for the **80% + 1 (28/35 votes)** consensus threshold, with dynamic fill and glow depending on majority status.
-- ⏳ **Live Countdown Clocks**: Real-time ticker for amendments in the 14-day lock period (e.g. `BatchV1_1` scheduled for activation on September 29, 2026).
-- 🎯 **All Active Amendments Overview**: Track all 10 amendments currently in voting side-by-side with quick-switcher pills and comparison cards.
-- 🛡️ **Validator Breakdown**: Full list of UNL validators voting Yea vs. Nay, with recursive parent-domain favicon resolution (`shadow.haas.berkeley.edu` → `haas.berkeley.edu` → `berkeley.edu`) and automatic image fallbacks.
+- 👾 **Authentic Retro 8-bit Aesthetic**: Pixel fonts (`Press Start 2P`, `Silkscreen`), glowing white retro frames, and arcade status banners (`wen batch?`, `wen delegate?`, `wen vault?`).
+- 📊 **3-Tier Validator & Upgrade Tracking**:
+  1. **Xrpld Validators**: Tracks network-wide validator upgrade progress to the amendment's required software version.
+  2. **UNL Validators**: Tracks consensus UNL nodes updated to the required version with the 80% consensus target line.
+  3. **Segmented Votes & Amendment Blocking**: Visual breakdown of `YES`, `NO`, and `OUTDATED` validators at risk of being amendment-blocked upon activation.
+- ⏳ **Live Countdown Clocks**: Real-time ticker for amendments in the 14-day lock period (e.g. `BatchV1_1`).
+- 🎯 **All Active Amendments Overview**: Track all amendments currently in voting side-by-side with quick-switcher pills and comparison cards.
+- 🛡️ **Validator Breakdown**: Full list of UNL validators voting Yea vs. Nay, with recursive parent-domain favicon resolution and automatic image fallbacks.
 - 🎊 **48-Hour Post-Activation Retention**: Newly activated amendments remain featured for 48 hours with a full-screen canvas confetti shower!
 - 🚀 **Zero-Config GitHub Pages**: Built with relative asset paths (`./`) and an automatic GitHub Actions deployment workflow.
 

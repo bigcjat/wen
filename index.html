@@ -13,15 +13,17 @@
     <div class="container">
       <!-- HEADER / WEN -->
       <header class="header">
-        <h1 class="title-wen" id="appTitle">wen</h1>
-        <p class="subtitle">Live consensus tracker for upcoming XRP Ledger features & amendments</p>
+        <h1 class="title-wen" id="appTitle">wen batch?</h1>
+        <div class="subtitle" id="appSubtitle">
+          <span>XRPL </span><span class="xls-highlight" id="subtitleXls">XLS56</span> <span id="subtitleFeature">ATOMIC BATCH</span>
+        </div>
       </header>
 
       <!-- FANCY FEATURE DROPDOWN -->
       <section class="dropdown-section" aria-label="Feature Selection">
         <div class="dropdown-header-label">
-          <span>Select XRPL Feature to Track</span>
-          <span class="active-count-badge" id="activeCountBadge">10 Features in Voting</span>
+          <span>Select Feature</span>
+          <span class="active-count-badge" id="activeCountBadge">10 In Voting</span>
         </div>
         <button class="dropdown-trigger" id="dropdownTrigger" aria-haspopup="listbox" aria-expanded="false">
           <div class="dropdown-current-info">
@@ -51,7 +53,7 @@
       <main class="hero-card" id="heroCard">
         <div class="hero-header">
           <div class="feature-meta">
-            <h2 id="featureHeadline" style="font-size: 1.5rem; font-weight: 800;">BatchV1_1</h2>
+            <h2 id="featureHeadline" style="font-family: var(--font-pixel); font-size: 1.25rem; font-weight: 400;">BatchV1_1</h2>
             <a href="https://xls.xrpl.org/xls/XLS-0056-batch.html" target="_blank" rel="noopener noreferrer" class="xls-badge-link" id="featureXlsBadge" title="Read official XLS specification">
               <span>XLS-56</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -69,40 +71,72 @@
 
         <div class="spec-link-wrap">
           <a href="https://xls.xrpl.org/xls/XLS-0056-batch.html" target="_blank" rel="noopener noreferrer" class="spec-doc-btn" id="featureSpecBtn">
-            <span>📖 Read Official XLS Specification</span>
+            <span>📖 Read XLS Specification</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           </a>
         </div>
 
-        <!-- CONSENSUS PROGRESS BAR -->
-        <div class="progress-container">
-          <div class="progress-header">
-            <div class="progress-label-main">
-              <span class="progress-caption">Consensus Tally</span>
-              <div class="vote-tally-big" id="voteTallyDisplay">
-                <span id="voteCount">30</span> <span>/ 35 Validators</span>
-              </div>
+        <!-- RETRO GLOWING PROGRESS BARS (EXACT 3-BAR SYSTEM FROM SCREENSHOT) -->
+        <div class="retro-bars-section">
+          <!-- BAR 1: ALL XRPLD VALIDATORS VERSION -->
+          <div class="retro-bar-block">
+            <div class="retro-bar-label">
+              <span id="retroBar1Title">Xrpld Validators   Ver 3.3.0</span>
+              <span id="retroBar1Metric" class="retro-metric">209/213 - 98.12%</span>
             </div>
-            <div class="consensus-percentage" id="percentageDisplay">85.7%</div>
-          </div>
-
-          <div class="progress-track-wrapper">
-            <!-- Progress Fill Bar -->
-            <div class="progress-fill majority" id="progressFill" style="width: 85.7%;"></div>
-            
-            <!-- 80% + 1 (28/35 = 80%) Consensus Indicator Pin -->
-            <div class="consensus-marker" title="Consensus Threshold: 28 of 35 votes (80%)">
-              <div class="consensus-flag">
-                <span>🎯</span> 80%+1 Threshold (28)
-              </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="retroBar1Fill" style="width: 98.12%;"></div>
             </div>
           </div>
 
-          <div class="progress-markers-bar">
-            <span>0 Votes</span>
-            <span style="position: relative; left: 12%;">Majority Zone (80%+)</span>
-            <span>35 Max</span>
+          <!-- BAR 2: ALL XRPLD NODES VERSION -->
+          <div class="retro-bar-block" style="margin-top: 1.4rem;">
+            <div class="retro-bar-label">
+              <span id="retroNodesTitle">Xrpld Nodes   Ver 3.3.0</span>
+              <span id="retroNodesMetric" class="retro-metric">772/813 - 94.96%</span>
+            </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="retroNodesFill" style="width: 94.96%;"></div>
+            </div>
           </div>
+
+          <!-- BAR 3: UNL CONSENSUS VALIDATORS VERSION -->
+          <div class="retro-bar-block" style="margin-top: 1.4rem;">
+            <div class="retro-bar-label">
+              <span id="retroBar2Title">UNL Validators   Ver 3.3.0</span>
+              <span id="retroBar2Metric" class="retro-metric">35/35 - 100.00%</span>
+            </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="progressFill" style="width: 100%;"></div>
+              <div class="consensus-marker" title="Consensus 80%+1 Threshold (28 of 35 votes)">
+                <div class="consensus-flag">80% TARGET</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BAR 3: SEGMENTED YES / NO / OUTDATED (MATCHING SCREENSHOT) -->
+          <div class="retro-bar-block" style="margin-top: 1.4rem;">
+            <div class="retro-bar-label">
+              <span id="retroAmendmentLabel">XLS56  BatchV1_1</span>
+              <span id="percentageDisplay" class="retro-metric">85.71% YES</span>
+            </div>
+            <div class="retro-bar-frame segmented-frame">
+              <div class="segment-yes" id="segmentYes" style="width: 85.71%;" title="YES Votes">YES (85.7%)</div>
+              <div class="segment-no" id="segmentNo" style="width: 14.29%;" title="NO / Veto Votes">NO (14.3%)</div>
+              <div class="segment-unvoted" id="segmentUnvoted" style="width: 0%;" title="OUTDATED: Will be amendment blocked if activated">OUTDATED (0%)</div>
+            </div>
+          </div>
+
+          <!-- AMENDMENT BLOCKED WARNING -->
+          <div class="amendment-blocked-warning" id="blockedWarning">
+            <span>⚡</span>
+            <span><b>Amendment Blocking:</b> Validators not updated to <span id="blockedVersionTag">Ver 3.3.0</span> will get Amendment Blocked upon activation.</span>
+          </div>
+        </div>
+
+        <!-- HIDDEN TALLY SPANS TO PRESERVE JS COMPATIBILITY -->
+        <div style="display: none;">
+          <span id="voteCount">30</span>
         </div>
 
         <!-- COUNTDOWN OR VOTE NEEDED CALLOUT -->
