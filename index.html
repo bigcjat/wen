@@ -77,46 +77,9 @@
           </a>
         </div>
 
-        <!-- RETRO GLOWING PROGRESS BARS (EXACT 3-BAR SYSTEM FROM SCREENSHOT) -->
+        <!-- SECTION 1: AMENDMENT CONSENSUS VOTING (TOP HERO) -->
         <div class="retro-bars-section">
-          <!-- BAR 1: ALL XRPLD VALIDATORS VERSION -->
           <div class="retro-bar-block">
-            <div class="retro-bar-label">
-              <span id="retroBar1Title">Xrpld Validators   Ver 3.3.0+</span>
-              <span id="retroBar1Metric" class="retro-metric">209/213 - 98.12%</span>
-            </div>
-            <div class="retro-bar-frame">
-              <div class="retro-fill" id="retroBar1Fill" style="width: 98.12%;"></div>
-            </div>
-          </div>
-
-          <!-- BAR 2: ALL XRPLD NODES VERSION -->
-          <div class="retro-bar-block" style="margin-top: 1.4rem;">
-            <div class="retro-bar-label">
-              <span id="retroNodesTitle">Xrpld Nodes   Ver 3.3.0+</span>
-              <span id="retroNodesMetric" class="retro-metric">772/813 - 94.96%</span>
-            </div>
-            <div class="retro-bar-frame">
-              <div class="retro-fill" id="retroNodesFill" style="width: 94.96%;"></div>
-            </div>
-          </div>
-
-          <!-- BAR 3: UNL CONSENSUS VALIDATORS VERSION -->
-          <div class="retro-bar-block" style="margin-top: 1.4rem;">
-            <div class="retro-bar-label">
-              <span id="retroBar2Title">UNL Validators   Ver 3.3.0+</span>
-              <span id="retroBar2Metric" class="retro-metric">35/35 - 100.00%</span>
-            </div>
-            <div class="retro-bar-frame">
-              <div class="retro-fill" id="progressFill" style="width: 100%;"></div>
-              <div class="consensus-marker" title="Consensus 80%+1 Threshold (28 of 35 votes)">
-                <div class="consensus-flag">80% TARGET</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BAR 3: SEGMENTED YES / NO / OUTDATED (MATCHING SCREENSHOT) -->
-          <div class="retro-bar-block" style="margin-top: 1.4rem;">
             <div class="retro-bar-label">
               <span id="retroAmendmentLabel">XLS56  BatchV1_1</span>
               <span id="percentageDisplay" class="retro-metric">85.71% YES</span>
@@ -140,17 +103,6 @@
               </div>
             </div>
           </div>
-
-          <!-- AMENDMENT BLOCKED WARNING -->
-          <div class="amendment-blocked-warning" id="blockedWarning">
-            <span>⚡</span>
-            <span><b>Amendment Blocking:</b> Validators not updated to <span id="blockedVersionTag">Ver 3.3.0</span> will get Amendment Blocked upon activation.</span>
-          </div>
-        </div>
-
-        <!-- HIDDEN TALLY SPANS TO PRESERVE JS COMPATIBILITY -->
-        <div style="display: none;">
-          <span id="voteCount">30</span>
         </div>
 
         <!-- COUNTDOWN OR VOTE NEEDED CALLOUT -->
@@ -166,6 +118,58 @@
               <div class="time-slot"><div class="time-num" id="timeSecs">00</div><div class="time-label">Secs</div></div>
             </div>
           </div>
+        </div>
+
+        <!-- SECTION 2: SEPARATE NODE & VALIDATOR VERSION ADOPTION -->
+        <div class="retro-readiness-panel">
+          <div class="retro-readiness-header">
+            <span class="readiness-tag">👾 XRPLD VERSION ADOPTION</span>
+            <span class="readiness-sub">Required: <b id="blockedVersionTag">Ver 3.3.0</b></span>
+          </div>
+
+          <!-- BAR 1: ALL XRPLD VALIDATORS VERSION -->
+          <div class="retro-bar-block">
+            <div class="retro-bar-label">
+              <span id="retroBar1Title">Xrpld Validators   Ver 3.3.0+</span>
+              <span id="retroBar1Metric" class="retro-metric">209/213 - 98.12%</span>
+            </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="retroBar1Fill" style="width: 98.12%;"></div>
+            </div>
+          </div>
+
+          <!-- BAR 2: ALL XRPLD NODES VERSION -->
+          <div class="retro-bar-block" style="margin-top: 1.3rem;">
+            <div class="retro-bar-label">
+              <span id="retroNodesTitle">Xrpld Nodes   Ver 3.3.0+</span>
+              <span id="retroNodesMetric" class="retro-metric">772/813 - 94.96%</span>
+            </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="retroNodesFill" style="width: 94.96%;"></div>
+            </div>
+          </div>
+
+          <!-- BAR 3: UNL CONSENSUS VALIDATORS VERSION -->
+          <div class="retro-bar-block" style="margin-top: 1.3rem;">
+            <div class="retro-bar-label">
+              <span id="retroBar2Title">UNL Validators   Ver 3.3.0+</span>
+              <span id="retroBar2Metric" class="retro-metric">35/35 - 100.00%</span>
+            </div>
+            <div class="retro-bar-frame">
+              <div class="retro-fill" id="progressFill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- AMENDMENT BLOCKED WARNING -->
+          <div class="amendment-blocked-warning" id="blockedWarning">
+            <span>⚡</span>
+            <span><b>Amendment Blocking:</b> Nodes and validators not updated to <span id="blockedVersionNotice">Ver 3.3.0</span> will get Amendment Blocked upon activation.</span>
+          </div>
+        </div>
+
+        <!-- HIDDEN TALLY SPANS TO PRESERVE JS COMPATIBILITY -->
+        <div style="display: none;">
+          <span id="voteCount">30</span>
         </div>
       </main>
 

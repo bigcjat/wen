@@ -64,6 +64,7 @@ const segmentYes = document.getElementById('segmentYes') as HTMLDivElement;
 const segmentNo = document.getElementById('segmentNo') as HTMLDivElement;
 const segmentUnvoted = document.getElementById('segmentUnvoted') as HTMLDivElement;
 const blockedVersionTag = document.getElementById('blockedVersionTag') as HTMLSpanElement;
+const blockedVersionNotice = document.getElementById('blockedVersionNotice') as HTMLSpanElement;
 
 const statusCallout = document.getElementById('statusCallout') as HTMLDivElement;
 const calloutIcon = document.getElementById('calloutIcon') as HTMLDivElement;
@@ -317,7 +318,24 @@ async function selectAmendment(amendment: RawAmendment) {
     currentVersionStats = null;
   }
 
-  updateProgressAndStatus();
+  // Trigger pixel-by-pixel stepped arcade filling animation
+  const fillBars = [retroBar1Fill, retroNodesFill, progressFill, segmentYes, segmentNo, segmentUnvoted];
+  fillBars.forEach((b) => {
+    if (b) {
+      b.style.transition = 'none';
+      b.style.width = '0%';
+    }
+  });
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fillBars.forEach((b) => {
+        if (b) b.style.transition = 'width 1.2s steps(28, end)';
+      });
+      updateProgressAndStatus();
+    });
+  });
+
   processValidators();
   renderValidators();
 }
@@ -383,6 +401,9 @@ function updateProgressAndStatus() {
 
   if (blockedVersionTag) {
     blockedVersionTag.textContent = `Ver ${reqVer}`;
+  }
+  if (blockedVersionNotice) {
+    blockedVersionNotice.textContent = `Ver ${reqVer}`;
   }
 
   voteCount.textContent = String(count);
