@@ -41,7 +41,9 @@ const amendmentsOverviewGrid = document.getElementById('amendmentsOverviewGrid')
 const overviewBadge = document.getElementById('overviewBadge') as HTMLSpanElement;
 
 const featureHeadline = document.getElementById('featureHeadline') as HTMLHeadingElement;
-const featureXlsBadge = document.getElementById('featureXlsBadge') as HTMLAnchorElement;
+const btnShare = document.getElementById('btnShare') as HTMLButtonElement;
+const shareBtnIcon = document.getElementById('shareBtnIcon') as HTMLSpanElement;
+const shareBtnText = document.getElementById('shareBtnText') as HTMLSpanElement;
 const featureSpecBtn = document.getElementById('featureSpecBtn') as HTMLAnchorElement;
 const featureStatusPill = document.getElementById('featureStatusPill') as HTMLSpanElement;
 const featureStatusText = document.getElementById('featureStatusText') as HTMLSpanElement;
@@ -183,6 +185,34 @@ function setupEventListeners() {
       selectAmendment(target, false);
     }
   });
+
+  // Share button: copies direct URL with parameter (?xls=56 or ?amendment=Name) to clipboard
+  if (btnShare) {
+    btnShare.addEventListener('click', async () => {
+      if (!selectedAmendment) return;
+      const url = new URL(window.location.origin + window.location.pathname);
+      if (selectedAmendment.xls) {
+        url.searchParams.set('xls', selectedAmendment.xls.replace(/^XLS-?/i, ''));
+      } else {
+        url.searchParams.set('amendment', selectedAmendment.name);
+      }
+      const shareUrl = url.toString();
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        btnShare.classList.add('copied');
+        if (shareBtnIcon) shareBtnIcon.textContent = '⚡';
+        if (shareBtnText) shareBtnText.textContent = 'COPIED!';
+        setTimeout(() => {
+          btnShare.classList.remove('copied');
+          if (shareBtnIcon) shareBtnIcon.textContent = '🔗';
+          if (shareBtnText) shareBtnText.textContent = 'SHARE';
+        }, 2000);
+      } catch {
+        prompt('Copy direct link to this amendment:', shareUrl);
+      }
+    });
+  }
 }
 
 function renderDropdownMenu() {
@@ -339,14 +369,6 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
 
   // Update XLS Spec Links
   const specUrl = getXlsUrl(amendment) || 'https://github.com/XRPLF/XRPL-Standards/discussions';
-  if (featureXlsBadge) {
-    featureXlsBadge.href = specUrl;
-    featureXlsBadge.innerHTML = `
-      <span>${escapeHtml(amendment.xls || 'AMENDMENT')}</span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-    `;
-    featureXlsBadge.title = `Read official ${amendment.xls || amendment.name} specification`;
-  }
 
   if (featureSpecBtn) {
     featureSpecBtn.href = specUrl;
