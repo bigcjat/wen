@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wen — XRPL Consensus & Amendment Radar</title>
+    <meta name="description" content="Real-time consensus tracker for upcoming XRP Ledger (XRPL) amendments, votes, countdowns, and validator status." />
+    <meta name="theme-color" content="#080c14" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- HEADER / WEN -->
+      <header class="header">
+        <div class="brand-badge">
+          <span class="live-dot"></span>
+          <span>XRPL Mainnet Radar</span>
+        </div>
+        <h1 class="title-wen" id="appTitle">wen</h1>
+        <p class="subtitle">Live consensus tracker for upcoming XRP Ledger features & amendments</p>
+      </header>
+
+      <!-- FANCY FEATURE DROPDOWN -->
+      <section class="dropdown-section" aria-label="Feature Selection">
+        <div class="dropdown-header-label">
+          <span>Select XRPL Feature to Track</span>
+          <span class="active-count-badge" id="activeCountBadge">10 Features in Voting</span>
+        </div>
+        <button class="dropdown-trigger" id="dropdownTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <div class="dropdown-current-info">
+            <div class="feature-title-wrap">
+              <span class="feature-tag" id="selectedXlsTag">XLS-56</span>
+              <span class="feature-name-display" id="selectedFeatureName">BatchV1_1</span>
+            </div>
+          </div>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <div class="dropdown-menu" id="dropdownMenu" role="listbox">
+          <!-- Dynamically populated with all active voting features -->
+        </div>
+
+        <!-- QUICK SWITCHER PILLS -->
+        <div class="pills-scroll-wrap">
+          <div class="pills-strip" id="pillsStrip" role="tablist" aria-label="Quick Select Amendments">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- HERO STATUS CARD -->
+      <main class="hero-card" id="heroCard">
+        <div class="hero-header">
+          <div class="feature-meta">
+            <h2 id="featureHeadline" style="font-size: 1.5rem; font-weight: 800;">BatchV1_1</h2>
+            <span class="xls-badge" id="featureXlsBadge">XLS-56</span>
+          </div>
+          <span class="status-pill activating" id="featureStatusPill">
+            <span>●</span>
+            <span id="featureStatusText">ACTIVATING</span>
+          </span>
+        </div>
+
+        <p class="feature-desc" id="featureDescription">
+          Atomic transaction batching (XLS-56). Allows up to 8 transactions to be bundled and executed in an all-or-nothing sequence.
+        </p>
+
+        <!-- CONSENSUS PROGRESS BAR -->
+        <div class="progress-container">
+          <div class="progress-header">
+            <div class="progress-label-main">
+              <span class="progress-caption">Consensus Tally</span>
+              <div class="vote-tally-big" id="voteTallyDisplay">
+                <span id="voteCount">30</span> <span>/ 35 Validators</span>
+              </div>
+            </div>
+            <div class="consensus-percentage" id="percentageDisplay">85.7%</div>
+          </div>
+
+          <div class="progress-track-wrapper">
+            <!-- Progress Fill Bar -->
+            <div class="progress-fill majority" id="progressFill" style="width: 85.7%;"></div>
+            
+            <!-- 80% + 1 (28/35 = 80%) Consensus Indicator Pin -->
+            <div class="consensus-marker" title="Consensus Threshold: 28 of 35 votes (80%)">
+              <div class="consensus-flag">
+                <span>🎯</span> 80%+1 Threshold (28)
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-markers-bar">
+            <span>0 Votes</span>
+            <span style="position: relative; left: 12%;">Majority Zone (80%+)</span>
+            <span>35 Max</span>
+          </div>
+        </div>
+
+        <!-- COUNTDOWN OR VOTE NEEDED CALLOUT -->
+        <div class="status-callout activating" id="statusCallout">
+          <div class="callout-icon" id="calloutIcon">⏳</div>
+          <div class="callout-text" style="width: 100%;">
+            <h4 id="calloutTitle">Majority Achieved: Activation Countdown Active</h4>
+            <p id="calloutSubtitle">This feature has sustained >80% validator support and will activate automatically.</p>
+            <div class="countdown-box" id="countdownBox">
+              <div class="time-slot"><div class="time-num" id="timeDays">00</div><div class="time-label">Days</div></div>
+              <div class="time-slot"><div class="time-num" id="timeHours">00</div><div class="time-label">Hours</div></div>
+              <div class="time-slot"><div class="time-num" id="timeMins">00</div><div class="time-label">Mins</div></div>
+              <div class="time-slot"><div class="time-num" id="timeSecs">00</div><div class="time-label">Secs</div></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ALL AMENDMENTS AT A GLANCE -->
+      <section class="overview-section" aria-label="All Active Amendments Overview">
+        <div class="section-header">
+          <div>
+            <h3 class="section-title">All Features Currently in Voting</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Click any feature below to inspect its live validator votes and countdown.</p>
+          </div>
+          <span class="active-count-badge" id="overviewBadge">10 Active</span>
+        </div>
+        <div class="amendments-overview-grid" id="amendmentsOverviewGrid">
+          <!-- Dynamically populated with all active amendments -->
+        </div>
+      </section>
+
+      <!-- VALIDATORS SECTION -->
+      <section class="validators-section" aria-label="Validator Votes">
+        <div class="section-header">
+          <div>
+            <h3 class="section-title">
+              Validator Votes for <span class="active-feature-highlight" id="validatorFeatureName">BatchV1_1</span>
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+              Showing all 35 UNL validator positions on <span id="validatorFeatureSub">BatchV1_1</span>
+            </p>
+          </div>
+          <div class="tab-group" role="tablist">
+            <button class="tab-btn active" id="tabAll" role="tab">All (<span id="countAll">35</span>)</button>
+            <button class="tab-btn" id="tabYea" role="tab">Yea (<span id="countYea">30</span>)</button>
+            <button class="tab-btn" id="tabNay" role="tab">Nay (<span id="countNay">5</span>)</button>
+          </div>
+        </div>
+
+        <div class="validator-grid" id="validatorGrid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        <p>Live XRPL Mainnet Consensus Data sourced via <a href="https://xrpscan.com" target="_blank" rel="noopener noreferrer">XRPScan API</a>.</p>
+        <p style="margin-top: 0.35rem; font-size: 0.75rem;">Consensus requires 80%+1 (28/35) validators for 14 continuous days to activate.</p>
+      </footer>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
