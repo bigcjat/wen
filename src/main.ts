@@ -15,6 +15,7 @@ let countdownInterval: number | null = null;
 
 // DOM Elements
 const appTitle = document.getElementById('appTitle') as HTMLHeadingElement;
+const titleWenTarget = document.getElementById('titleWenTarget') as HTMLSpanElement;
 const subtitleXls = document.getElementById('subtitleXls') as HTMLSpanElement;
 const subtitleFeature = document.getElementById('subtitleFeature') as HTMLSpanElement;
 
@@ -334,10 +335,14 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
 
   // Dynamically derive retro header and subtitle directly from amendment name
   const cleanBase = amendment.name.replace(/V\d+(_\d+)?$/i, '');
-  const wenTitle = `wen ${cleanBase.toLowerCase()}?`;
+  const featureWord = `${cleanBase.toLowerCase()}?`;
   const featureTitle = amendment.name.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase();
 
-  if (appTitle) appTitle.textContent = wenTitle;
+  if (titleWenTarget) {
+    titleWenTarget.textContent = featureWord;
+  } else if (appTitle) {
+    appTitle.innerHTML = `<span class="title-wen-prefix">wen</span><span class="title-wen-target">${escapeHtml(featureWord)}</span>`;
+  }
   if (subtitleXls) subtitleXls.textContent = amendment.xls ? amendment.xls.replace('-', '') : 'XRPL';
   if (subtitleFeature) subtitleFeature.textContent = featureTitle;
 
