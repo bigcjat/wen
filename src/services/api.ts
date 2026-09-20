@@ -27,13 +27,14 @@ export const XLS_SPEC_MAP: Record<string, string> = {
 const API_BASE = 'https://api.xrpscan.com/api/v1';
 
 /**
- * Resolves the official XLS documentation or specification URL
+ * Resolves the official XRPL documentation or XLS specification URL.
+ * Uses the official predictable anchor on xrpl.org/resources/known-amendments
  */
-export function getXlsUrl(amendment: RawAmendment): string | null {
+export function getXlsUrl(amendment: RawAmendment): string {
   if (amendment.xls_url) return amendment.xls_url;
   if (amendment.xls && XLS_SPEC_MAP[amendment.xls]) return XLS_SPEC_MAP[amendment.xls];
-  if (XLS_SPEC_MAP[amendment.name]) return XLS_SPEC_MAP[amendment.name];
-  return null;
+  const anchor = encodeURIComponent(amendment.name.toLowerCase());
+  return `https://xrpl.org/resources/known-amendments#${anchor}`;
 }
 
 export const FEATURE_INFO: Record<string, { summary: string; impact: string }> = {
@@ -121,17 +122,18 @@ export function filterActiveVotingAmendments(all: RawAmendment[]): RawAmendment[
  * Fetch all amendments from XRPSCAN API
  */
 export async function fetchAllAmendments(): Promise<RawAmendment[]> {
-  try {
-    const resp = await fetch(`${API_BASE}/amendments`, {
-      headers: { Accept: 'application/json' }
-    });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data: RawAmendment[] = await resp.json();
-    return filterActiveVotingAmendments(data);
-  } catch (err) {
-    console.warn('Live API fetch failed, using cached fallback data:', err);
-    return getFallbackAmendments();
+  const resp = await fetch(`${API_BASE}/amendments`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch live amendments from XRPScan API (HTTP ${resp.status})`);
   }
+  const data: RawAmendment[] = await resp.json();
+  const filtered = filterActiveVotingAmendments(data);
+  if (!filtered || filtered.length === 0) {
+    throw new Error('No active voting amendments returned from live XRPScan API');
+  }
+  return filtered;
 }
 
 /**
@@ -174,34 +176,34 @@ let cachedNodes: NodeEntry[] | null = null;
 
 export async function fetchValidatorRegistry(): Promise<ValidatorRegistryEntry[]> {
   if (cachedRegistry) return cachedRegistry;
-  try {
-    const resp = await fetch(`${API_BASE}/validatorregistry`, {
-      headers: { Accept: 'application/json' }
-    });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data: ValidatorRegistryEntry[] = await resp.json();
-    cachedRegistry = data;
-    return data;
-  } catch (err) {
-    console.warn('Validator registry fetch failed, using defaults:', err);
-    return [];
+  const resp = await fetch(`${API_BASE}/validatorregistry`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch live validator registry from XRPScan API (HTTP ${resp.status})`);
   }
+  const data: ValidatorRegistryEntry[] = await resp.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('Live validator registry returned empty dataset');
+  }
+  cachedRegistry = data;
+  return data;
 }
 
 export async function fetchNodes(): Promise<NodeEntry[]> {
   if (cachedNodes) return cachedNodes;
-  try {
-    const resp = await fetch(`${API_BASE}/nodes`, {
-      headers: { Accept: 'application/json' }
-    });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data: NodeEntry[] = await resp.json();
-    cachedNodes = data;
-    return data;
-  } catch (err) {
-    console.warn('Nodes endpoint fetch failed, using defaults:', err);
-    return [];
+  const resp = await fetch(`${API_BASE}/nodes`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch live network nodes from XRPScan API (HTTP ${resp.status})`);
   }
+  const data: NodeEntry[] = await resp.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('Live nodes crawler returned empty dataset');
+  }
+  cachedNodes = data;
+  return data;
 }
 
 export function isVersionAtLeast(actual: string, required: string): boolean {
@@ -232,42 +234,32 @@ export async function calculateVersionStats(requiredVersion = '3.3.0'): Promise<
     fetchNodes()
   ]);
 
-  const is340 = requiredVersion.startsWith('3.4');
-
-  // Node calculation
-  let totalNodes = nodes.length;
-  let updatedNodes = 0;
-  if (totalNodes > 0) {
-    nodes.forEach((n) => {
-      const ver = n.server_version || n.version || '';
-      if (isVersionAtLeast(ver, requiredVersion)) {
-        updatedNodes++;
-      }
-    });
-  } else {
-    totalNodes = 813;
-    updatedNodes = is340 ? 188 : 772;
+  if (!nodes || nodes.length === 0) {
+    throw new Error('Node telemetry unavailable from network API');
   }
-
-  // Validator calculation
   if (!registry || registry.length === 0) {
-    return {
-      requiredVersion,
-      totalValidators: 213,
-      updatedValidators: is340 ? 72 : 209,
-      totalUnl: 35,
-      updatedUnl: is340 ? 12 : 35,
-      outdatedUnl: is340 ? 23 : 0,
-      totalNodes,
-      updatedNodes
-    };
+    throw new Error('Validator registry unavailable from network API');
   }
 
+  // Node calculation directly from live API
+  const totalNodes = nodes.length;
+  let updatedNodes = 0;
+  nodes.forEach((n) => {
+    const ver = n.server_version || n.version || '';
+    if (isVersionAtLeast(ver, requiredVersion)) {
+      updatedNodes++;
+    }
+  });
+
+  // Validator calculation directly from live API
   const totalValidators = registry.length;
   let updatedValidators = 0;
 
   const unlValidators = registry.filter((v) => v.unl && v.unl.length > 0);
-  const totalUnl = unlValidators.length || 35;
+  const totalUnl = unlValidators.length;
+  if (totalUnl === 0) {
+    throw new Error('UNL consensus validators not found in live registry');
+  }
   let updatedUnl = 0;
 
   registry.forEach((v) => {
@@ -297,150 +289,12 @@ export async function calculateVersionStats(requiredVersion = '3.3.0'): Promise<
 }
 
 export async function fetchAmendmentDetails(name: string): Promise<DetailedAmendment> {
-  try {
-    const resp = await fetch(`${API_BASE}/amendment/${encodeURIComponent(name)}`, {
-      headers: { Accept: 'application/json' }
-    });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data: DetailedAmendment = await resp.json();
-    return data;
-  } catch (err) {
-    console.warn(`Live details fetch failed for ${name}, using fallback:`, err);
-    return getFallbackDetails(name);
+  const resp = await fetch(`${API_BASE}/amendment/${encodeURIComponent(name)}`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch live voting details for ${name} (HTTP ${resp.status})`);
   }
-}
-
-function getFallbackAmendments(): RawAmendment[] {
-  return [
-    {
-      amendment_id: '9F287AED3CDB50A7BD1ACEC24296A30C9B5230CCD136219317AC790E3B884377',
-      name: 'BatchV1_1',
-      xls: 'XLS-56',
-      enabled: false,
-      majority: 842796401,
-      count: 30,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '0F48FF561C709540328F31F1C97FD512ACC8B4E42138A161CB0E21ECA292540B',
-      name: 'PermissionDelegationV1_1',
-      xls: 'XLS-75',
-      enabled: false,
-      majority: null,
-      count: 26,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '81BD2619B6B3C8625AC5D0BC01DE17F06C3F0AB95C7C87C93715B87A4FD240D8',
-      name: 'SingleAssetVault',
-      xls: 'XLS-65',
-      enabled: false,
-      majority: null,
-      count: 16,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '2110E4A19966E2EF517C0A8C56A5F35099D7665B0BB89D7B126B30D50B86AAD5',
-      name: 'ConfidentialTransfer',
-      xls: 'XLS-96',
-      enabled: false,
-      majority: null,
-      count: 13,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '58E92F338758479C06084E1B6BA366BAD8F75E5329A7F0EEAFFFDA51E5106B7F',
-      name: 'DynamicMPT',
-      xls: 'XLS-94',
-      enabled: false,
-      majority: null,
-      count: 13,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '2BF037D90E1B676B17592A8AF55E88DB465398B4B597AE46EECEE1399AB05699',
-      name: 'fixXChainRewardRounding',
-      enabled: false,
-      majority: null,
-      count: 12,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: '98433DD001A5737F773D74F8CA2A25A065089C73B2E611C760BAF369E4FECA76',
-      name: 'fixCleanup3_4_0',
-      enabled: false,
-      majority: null,
-      count: 9,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: 'BE1F90581635DBCEBFC4678C4B54FEDDC1A17B50FD02CFE765A4132A342126AC',
-      name: 'Sponsor',
-      xls: 'XLS-68',
-      enabled: false,
-      majority: null,
-      count: 6,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: 'C98D98EE9616ACD36E81FDEB8D41D349BF5F1B41DD64A0ABC1FE9AA5EA267E9C',
-      name: 'XChainBridge',
-      xls: 'XLS-38',
-      enabled: false,
-      majority: null,
-      count: 5,
-      threshold: 28,
-      validations: 35
-    },
-    {
-      amendment_id: 'A360E2BFD775A5B0DCE1C36C16DF31B72735A57584FD163655D2F9564F8E7AC8',
-      name: 'LendingProtocolV1_1',
-      xls: 'XLS-66',
-      enabled: false,
-      majority: null,
-      count: 0,
-      threshold: 28,
-      validations: 35
-    }
-  ];
-}
-
-function getFallbackDetails(name: string): DetailedAmendment {
-  const base = getFallbackAmendments().find((a) => a.name === name) || getFallbackAmendments()[0];
-  return {
-    ...base,
-    voters: [
-      { domain: 'ripple.com' },
-      { domain: 'bitso.com' },
-      { domain: 'validator.gatehub.net' },
-      { domain: 'bithomp.com' },
-      { domain: 'xrpscan.com' },
-      { domain: 'xrp.vet' },
-      { domain: 'shadow.haas.berkeley.edu' },
-      { domain: 'ripple.ittc.ku.edu' },
-      { domain: 'ripple.kenan-flagler.unc.edu' },
-      { domain: 'ripplevalidator.uwaterloo.ca' },
-      { domain: 'arrington-xrp-capital.blockdaemon.com' },
-      { domain: 'peersyst.cloud' },
-      { domain: 'squidrouter.com' },
-      { domain: 'anodos.finance' },
-      { domain: 'aureusox.com' },
-      { domain: 'www.bitrue.com' }
-    ],
-    vetoers: [
-      { domain: 'validator.xrpl-labs.com' },
-      { domain: 'v2.xrpl-commons.org' },
-      { domain: 'tequ.dev' },
-      { domain: 'cabbit.tech' },
-      { domain: 'gen3labs.xyz' }
-    ]
-  };
+  const data: DetailedAmendment = await resp.json();
+  return data;
 }

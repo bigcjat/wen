@@ -93,10 +93,15 @@ async function init() {
   try {
     activeAmendments = await fetchAllAmendments();
   } catch (err) {
-    console.error('Failed to load amendments', err);
+    console.error('Failed to load live amendments', err);
+    displayFatalError(err);
+    return;
   }
 
-  if (activeAmendments.length === 0) return;
+  if (activeAmendments.length === 0) {
+    displayFatalError(new Error('Zero active voting amendments returned by XRPL live API'));
+    return;
+  }
 
   const countText = `${activeAmendments.length} Features in Voting`;
   if (activeCountBadge) activeCountBadge.textContent = countText;
@@ -371,6 +376,13 @@ function updateProgressAndStatus() {
     if (retroBar2Title) retroBar2Title.textContent = `UNL Validators   Ver ${reqVer}+`;
     if (retroBar2Metric) retroBar2Metric.textContent = `${currentVersionStats.updatedUnl}/${currentVersionStats.totalUnl} - ${pct2}%`;
     if (progressFill) progressFill.style.width = `${pct2}%`;
+  } else {
+    if (retroBar1Metric) retroBar1Metric.textContent = `API ERROR`;
+    if (retroNodesMetric) retroNodesMetric.textContent = `API ERROR`;
+    if (retroBar2Metric) retroBar2Metric.textContent = `API ERROR`;
+    if (retroBar1Fill) retroBar1Fill.style.width = '0%';
+    if (retroNodesFill) retroNodesFill.style.width = '0%';
+    if (progressFill) progressFill.style.width = '0%';
   }
 
   // Update Bar 3: Segmented Vote Breakdown (matching screenshot bottom bar)
@@ -563,6 +575,16 @@ function setValidatorFilter(filter: 'ALL' | 'YEA' | 'NAY') {
 function renderValidators() {
   validatorGrid.innerHTML = '';
 
+  if (!currentDetails) {
+    validatorGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 4px;">
+        <p style="font-family: var(--font-pixel); color: #ef4444; font-size: 0.8rem; margin-bottom: 0.5rem;">⚠️ API ERROR: LIVE VOTER LIST UNREACHABLE</p>
+        <p style="font-family: var(--font-silkscreen); color: #fca5a5; font-size: 0.75rem;">Could not load live validator votes for ${selectedAmendment ? escapeHtml(selectedAmendment.name) : 'this feature'} from XRPScan API. No fake data is shown.</p>
+      </div>
+    `;
+    return;
+  }
+
   const filtered = currentValidators.filter((v) => {
     if (currentFilter === 'ALL') return true;
     return v.status === currentFilter;
@@ -646,6 +668,31 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function displayFatalError(err: unknown) {
+  const container = document.querySelector('.container');
+  if (!container) return;
+  const msg = err instanceof Error ? err.message : String(err);
+  container.innerHTML = `
+    <header class="header">
+      <h1 class="title-wen" style="color: #ef4444;">error!</h1>
+      <div class="subtitle" style="color: #f87171;">XRPL LIVE API FAILED</div>
+    </header>
+    <div class="hero-card" style="border-color: #ef4444; box-shadow: 0 0 24px rgba(239, 68, 68, 0.4); text-align: center; padding: 2.5rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🚨</div>
+      <h2 style="font-family: var(--font-pixel); font-size: 1rem; color: #ef4444; margin-bottom: 1rem;">LIVE TELEMETRY UNAVAILABLE</h2>
+      <p style="font-family: var(--font-silkscreen); color: #fca5a5; font-size: 0.9rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem;">
+        ${escapeHtml(msg)}
+      </p>
+      <p style="font-family: var(--font-pixel); font-size: 0.65rem; color: #94a3b8; margin-bottom: 2rem;">
+        No fake or cached fallback data is permitted. If the API is offline or rate-limited, live consensus telemetry cannot be displayed.
+      </p>
+      <button onclick="location.reload()" style="font-family: var(--font-pixel); background: #ef4444; color: #ffffff; border: none; padding: 0.85rem 1.5rem; font-size: 0.8rem; cursor: pointer; border-radius: 4px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);">
+        🔄 RETRY CONNECTION
+      </button>
+    </div>
+  `;
 }
 
 // Start application
