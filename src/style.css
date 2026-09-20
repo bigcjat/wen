@@ -894,14 +894,22 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-.callout-icon {
-  font-size: 1.8rem;
+.callout-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  font-weight: 400;
+  margin-bottom: 0.35rem;
+  line-height: 1.35;
 }
 
-.callout-text h4 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 0.2rem;
+.callout-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .callout-text p {

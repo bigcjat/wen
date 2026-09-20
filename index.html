@@ -107,9 +107,11 @@
 
         <!-- COUNTDOWN OR VOTE NEEDED CALLOUT -->
         <div class="status-callout activating" id="statusCallout">
-          <div class="callout-icon" id="calloutIcon">⏳</div>
           <div class="callout-text" style="width: 100%;">
-            <h4 id="calloutTitle">Live Telemetry Initializing...</h4>
+            <h4 class="callout-heading">
+              <span class="callout-icon" id="calloutIcon">⏳</span>
+              <span id="calloutTitle">Live Telemetry Initializing...</span>
+            </h4>
             <p id="calloutSubtitle">Querying XRPL consensus status from XRPScan API...</p>
             <div class="countdown-box" id="countdownBox">
               <div class="time-slot"><div class="time-num" id="timeDays">--</div><div class="time-label">Days</div></div>

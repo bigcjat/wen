@@ -192,9 +192,11 @@ function setupEventListeners() {
       if (!selectedAmendment) return;
       const url = new URL(window.location.origin + window.location.pathname);
       if (selectedAmendment.xls) {
-        url.searchParams.set('xls', selectedAmendment.xls.replace(/^XLS-?/i, ''));
+        url.searchParams.set('XLS', selectedAmendment.xls.replace(/^XLS-?/i, ''));
+        url.searchParams.delete('xls');
       } else {
-        url.searchParams.set('amendment', selectedAmendment.name);
+        url.searchParams.set('XLS', selectedAmendment.name);
+        url.searchParams.delete('xls');
       }
       const shareUrl = url.toString();
 
@@ -333,14 +335,15 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
     const url = new URL(window.location.href);
     if (amendment.xls) {
       const xlsNum = amendment.xls.replace(/^XLS-?/i, '');
-      url.searchParams.set('xls', xlsNum);
+      url.searchParams.set('XLS', xlsNum);
+      url.searchParams.delete('xls');
       url.searchParams.delete('amendment');
       url.searchParams.delete('feature');
       url.searchParams.delete('name');
     } else {
-      url.searchParams.set('amendment', amendment.name);
+      url.searchParams.set('XLS', amendment.name);
       url.searchParams.delete('xls');
-      url.searchParams.delete('XLS');
+      url.searchParams.delete('amendment');
       url.searchParams.delete('feature');
       url.searchParams.delete('name');
     }
