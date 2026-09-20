@@ -399,16 +399,37 @@ function updateProgressAndStatus() {
   const pctOutdated = isJustActivated ? 0 : Math.round((outdatedCount / total) * 1000) / 10;
 
   if (segmentYes) {
-    segmentYes.style.width = `${pctYea}%`;
-    segmentYes.textContent = pctYea >= 12 ? `YES (${pctYea}%)` : (pctYea > 0 ? `${pctYea}%` : '');
+    if (pctYea > 0) {
+      segmentYes.style.display = 'flex';
+      segmentYes.style.width = `${pctYea}%`;
+      segmentYes.textContent = pctYea >= 12 ? `YES (${pctYea}%)` : (pctYea > 0 ? `${pctYea}%` : '');
+    } else {
+      segmentYes.style.display = 'none';
+      segmentYes.style.width = '0%';
+      segmentYes.textContent = '';
+    }
   }
   if (segmentNo) {
-    segmentNo.style.width = `${pctNay}%`;
-    segmentNo.textContent = pctNay >= 12 ? `NO (${pctNay}%)` : (pctNay > 0 ? `${pctNay}%` : '');
+    if (pctNay > 0) {
+      segmentNo.style.display = 'flex';
+      segmentNo.style.width = `${pctNay}%`;
+      segmentNo.textContent = pctNay >= 12 ? `NO (${pctNay}%)` : (pctNay > 0 ? `${pctNay}%` : '');
+    } else {
+      segmentNo.style.display = 'none';
+      segmentNo.style.width = '0%';
+      segmentNo.textContent = '';
+    }
   }
   if (segmentUnvoted) {
-    segmentUnvoted.style.width = `${pctOutdated}%`;
-    segmentUnvoted.textContent = pctOutdated >= 15 ? `OUTDATED (${pctOutdated}%)` : (pctOutdated > 0 ? `${pctOutdated}%` : '');
+    if (pctOutdated > 0) {
+      segmentUnvoted.style.display = 'flex';
+      segmentUnvoted.style.width = `${pctOutdated}%`;
+      segmentUnvoted.textContent = pctOutdated >= 15 ? `OUTDATED (${pctOutdated}%)` : (pctOutdated > 0 ? `${pctOutdated}%` : '');
+    } else {
+      segmentUnvoted.style.display = 'none';
+      segmentUnvoted.style.width = '0%';
+      segmentUnvoted.textContent = '';
+    }
   }
 
   if (blockedVersionTag) {
