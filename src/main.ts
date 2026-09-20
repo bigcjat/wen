@@ -90,39 +90,30 @@ const validatorFeatureSub = document.getElementById('validatorFeatureSub') as HT
 
 function findAmendmentFromUrl(amendments: RawAmendment[]): RawAmendment | null {
   const params = new URLSearchParams(window.location.search);
-  const xlsParam = params.get('xls') || params.get('XLS');
-  const amendmentParam = params.get('amendment') || params.get('feature') || params.get('name');
-  const hash = window.location.hash.replace(/^#/, '').trim();
+  // Support ?XLS or ?xls or ?amendment or ?feature or #hash
+  const queryRaw = params.get('XLS') || params.get('xls') || params.get('amendment') || params.get('feature') || window.location.hash.replace(/^#/, '');
+  if (!queryRaw) return null;
 
-  // 1. Check XLS parameter (e.g. ?xls=56, ?xls=xls-56, ?XLS=56)
-  if (xlsParam) {
-    const cleanXls = xlsParam.toLowerCase().replace(/^xls-?/, '').trim();
-    const match = amendments.find((a) => {
-      if (!a.xls) return false;
-      const aXls = a.xls.toLowerCase().replace(/^xls-?/, '').trim();
-      return aXls === cleanXls;
-    });
-    if (match) return match;
-  }
+  const query = queryRaw.toLowerCase().trim();
+  const cleanNum = query.replace(/^xls-?/, '');
 
-  // 2. Check amendment name parameter (e.g. ?amendment=batch, ?amendment=BatchV1_1)
-  if (amendmentParam) {
-    const cleanName = amendmentParam.toLowerCase();
-    const match = amendments.find(
-      (a) => a.name.toLowerCase() === cleanName || a.name.toLowerCase().startsWith(cleanName)
-    );
-    if (match) return match;
-  }
+  // 1. Try matching by XLS number (e.g. "56", "xls-56")
+  const xlsMatch = amendments.find((a) => {
+    if (!a.xls) return false;
+    const aXls = a.xls.toLowerCase().replace(/^xls-?/, '').trim();
+    return aXls === cleanNum || aXls === query;
+  });
+  if (xlsMatch) return xlsMatch;
 
-  // 3. Check hash (e.g. #56, #xls-56, #batch)
-  if (hash) {
-    const cleanHash = hash.toLowerCase().replace(/^xls-?/, '').trim();
-    const match = amendments.find((a) => {
-      const aXls = a.xls ? a.xls.toLowerCase().replace(/^xls-?/, '').trim() : '';
-      return aXls === cleanHash || a.name.toLowerCase() === cleanHash || a.name.toLowerCase().startsWith(cleanHash);
-    });
-    if (match) return match;
-  }
+  // 2. Try matching by Amendment Name (e.g. "fixCleanup3_4_0", "batchv1_1")
+  const exactNameMatch = amendments.find((a) => a.name.toLowerCase() === query);
+  if (exactNameMatch) return exactNameMatch;
+
+  // 3. Try partial name match (e.g. "fixcleanup", "batch", "confidential")
+  const partialNameMatch = amendments.find(
+    (a) => a.name.toLowerCase().startsWith(query) || a.name.toLowerCase().includes(query)
+  );
+  if (partialNameMatch) return partialNameMatch;
 
   return null;
 }
