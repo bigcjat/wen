@@ -1,84 +1,16 @@
 import type { RawAmendment, DetailedAmendment } from '../types';
 
-export const XLS_SPEC_MAP: Record<string, string> = {
-  'XLS-56': 'https://xls.xrpl.org/xls/XLS-0056-batch.html',
-  'XLS-75': 'https://xls.xrpl.org/xls/XLS-0075-permission-delegation.html',
-  'XLS-65': 'https://xls.xrpl.org/xls/XLS-0065-single-asset-vault.html',
-  'XLS-66': 'https://xls.xrpl.org/xls/XLS-0066-lending-protocol.html',
-  'XLS-68': 'https://xls.xrpl.org/xls/XLS-0068-sponsored-fees-and-reserves.html',
-  'XLS-94': 'https://xls.xrpl.org/xls/XLS-0094-dynamic-MPT.html',
-  'XLS-96': 'https://xls.xrpl.org/xls/XLS-0096-confidential-mpt.html',
-  'XLS-38': 'https://xls.xrpl.org/xls/XLS-0038-cross-chain-bridge.html',
-  'XLS-30': 'https://xls.xrpl.org/xls/XLS-0030-automated-market-maker.html',
-  'XLS-20': 'https://xls.xrpl.org/xls/XLS-0020-non-fungible-tokens.html',
-  'XLS-40': 'https://xls.xrpl.org/xls/XLS-0040-decentralized-identity.html',
-  'XLS-33': 'https://xls.xrpl.org/xls/XLS-0033-multi-purpose-tokens.html',
-  'XLS-47': 'https://xls.xrpl.org/xls/XLS-0047-PriceOracles.html',
-  'XLS-85': 'https://xls.xrpl.org/xls/XLS-0085-token-escrow.html',
-  'XLS-70': 'https://xls.xrpl.org/xls/XLS-0070-credentials.html',
-  'XLS-77': 'https://xls.xrpl.org/xls/XLS-0077-deep-freeze.html',
-  'XLS-80': 'https://xls.xrpl.org/xls/XLS-0080-permissioned-domains.html',
-  'XLS-81': 'https://xls.xrpl.org/xls/XLS-0081-permissioned-dex.html',
-  // Patch / cleanup fallback URLs
-  'fixCleanup3_4_0': 'https://github.com/XRPLF/rippled/releases/tag/3.4.0',
-  'fixXChainRewardRounding': 'https://github.com/XRPLF/rippled/releases'
-};
-
 const API_BASE = 'https://api.xrpscan.com/api/v1';
 
 /**
- * Resolves the official XRPL documentation or XLS specification URL.
- * Uses the official predictable anchor on xrpl.org/resources/known-amendments
+ * Resolves the official XRPL documentation anchor on xrpl.org dynamically.
+ * Zero hardcoding: uses the predictable anchor on xrpl.org/resources/known-amendments.
  */
 export function getXlsUrl(amendment: RawAmendment): string {
   if (amendment.xls_url) return amendment.xls_url;
-  if (amendment.xls && XLS_SPEC_MAP[amendment.xls]) return XLS_SPEC_MAP[amendment.xls];
   const anchor = encodeURIComponent(amendment.name.toLowerCase());
   return `https://xrpl.org/resources/known-amendments#${anchor}`;
 }
-
-export const FEATURE_INFO: Record<string, { summary: string; impact: string }> = {
-  BatchV1_1: {
-    summary: 'Atomic transaction batching (XLS-56). Bundles up to 8 transactions executed in an all-or-nothing sequence.',
-    impact: 'Enables complex multi-step DeFi, atomic arbitrage, and batch payments without intermediate failure risk.'
-  },
-  PermissionDelegationV1_1: {
-    summary: 'Granular account permission delegation (XLS-75). Authorizes secondary accounts or keys with restricted permissions.',
-    impact: 'Allows trading bots, automated recurring actions, or authorized operators without risking master seed keys.'
-  },
-  SingleAssetVault: {
-    summary: 'Native single-asset liquidity and yield vaults (XLS-65). Deposit XRP or IOUs to earn on-ledger yield.',
-    impact: 'Lays the on-chain DeFi foundation for lending protocols, pooled liquidity, and automated interest.'
-  },
-  ConfidentialTransfer: {
-    summary: 'Zero-knowledge privacy-preserving transfers (XLS-96). Hides transaction balances and transfer amounts on-ledger.',
-    impact: 'Provides institutional confidentiality and private transfers while preserving regulatory compliance and auditability.'
-  },
-  DynamicMPT: {
-    summary: 'Dynamic Multi-Purpose Tokens (XLS-94). Extends MPT with mutable metadata and lifecycle properties.',
-    impact: 'Enables real-world assets (RWA), identity-bound tokens, and dynamic financial assets on XRPL.'
-  },
-  LendingProtocolV1_1: {
-    summary: 'Native decentralized fixed-term and pooled lending protocol (XLS-66) built on Single Asset Vaults.',
-    impact: 'Enables uncollateralized/undercollateralized loans and interest rate markets natively without smart contracts.'
-  },
-  fixCleanup3_4_0: {
-    summary: 'Protocol optimizations and stability fixes introduced in xrpld v3.4.0.',
-    impact: 'Resolves edge cases in consensus and transaction execution across all UNL nodes.'
-  },
-  fixXChainRewardRounding: {
-    summary: 'Fix for reward rounding calculations in cross-chain bridge witness claims.',
-    impact: 'Ensures exact reward distributions for cross-chain bridge witness servers.'
-  },
-  Sponsor: {
-    summary: 'Account reserve sponsorship (XLS-68). Allows third parties to lock reserve fees for user accounts.',
-    impact: 'Enables zero-friction user onboarding where applications fund account creation and trustlines.'
-  },
-  XChainBridge: {
-    summary: 'Cross-chain bridging protocol (XLS-38). Trustless value transfer between XRPL and sidechains (e.g. EVM sidechain).',
-    impact: 'Connects XRPL Mainnet liquidity directly to external smart contract chains and sidechains.'
-  }
-};
 
 const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
 

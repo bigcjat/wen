@@ -1,6 +1,6 @@
 import './style.css';
 import type { RawAmendment, DetailedAmendment, EnrichedValidator } from './types';
-import { fetchAllAmendments, fetchAmendmentDetails, FEATURE_INFO, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
+import { fetchAllAmendments, fetchAmendmentDetails, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
 import { getFaviconCandidates, getFallbackMonogram } from './services/favicon';
 import { fireConfetti } from './services/confetti';
 
@@ -12,19 +12,6 @@ let currentValidators: EnrichedValidator[] = [];
 let currentVersionStats: VersionStats | null = null;
 let currentFilter: 'ALL' | 'YEA' | 'NAY' = 'ALL';
 let countdownInterval: number | null = null;
-
-const RETRO_NAMES: Record<string, { wen: string; title: string }> = {
-  BatchV1_1: { wen: 'wen batch?', title: 'ATOMIC BATCH' },
-  PermissionDelegationV1_1: { wen: 'wen delegate?', title: 'PERMISSION DELEGATION' },
-  SingleAssetVault: { wen: 'wen vault?', title: 'SINGLE ASSET VAULT' },
-  ConfidentialTransfer: { wen: 'wen privacy?', title: 'CONFIDENTIAL TRANSFERS' },
-  DynamicMPT: { wen: 'wen mpt?', title: 'DYNAMIC MPT' },
-  LendingProtocolV1_1: { wen: 'wen lend?', title: 'LENDING PROTOCOL' },
-  Sponsor: { wen: 'wen sponsor?', title: 'RESERVE SPONSOR' },
-  XChainBridge: { wen: 'wen bridge?', title: 'CROSS-CHAIN BRIDGE' },
-  fixCleanup3_4_0: { wen: 'wen 3.4.0?', title: 'CLEANUP PATCH' },
-  fixXChainRewardRounding: { wen: 'wen fix?', title: 'REWARD ROUNDING FIX' }
-};
 
 // DOM Elements
 const appTitle = document.getElementById('appTitle') as HTMLHeadingElement;
@@ -143,8 +130,8 @@ async function init() {
   renderPills();
   renderOverviewGrid();
 
-  // Select requested amendment from URL (?xls=56, ?amendment=name), otherwise fallback to BatchV1_1 or first item
-  const initial = findAmendmentFromUrl(activeAmendments) || activeAmendments.find((a) => a.name === 'BatchV1_1') || activeAmendments[0];
+  // Select requested amendment from URL (?XLS=56, ?XLS=fixCleanup3_4_0), otherwise default to first active amendment
+  const initial = findAmendmentFromUrl(activeAmendments) || activeAmendments[0];
   await selectAmendment(initial, false);
 }
 
@@ -171,7 +158,7 @@ function setupEventListeners() {
 
   // Browser Back / Forward navigation
   window.addEventListener('popstate', () => {
-    const target = findAmendmentFromUrl(activeAmendments) || activeAmendments.find((a) => a.name === 'BatchV1_1') || activeAmendments[0];
+    const target = findAmendmentFromUrl(activeAmendments) || activeAmendments[0];
     if (target && target.name !== selectedAmendment?.name) {
       selectAmendment(target, false);
     }
@@ -345,14 +332,14 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
   renderPills();
   renderOverviewGrid();
 
-  // Update Retro Title & Subtitle (matching the screenshot style!)
-  const retroInfo = RETRO_NAMES[amendment.name] || {
-    wen: `wen ${amendment.name.toLowerCase().slice(0, 8)}?`,
-    title: amendment.name.toUpperCase()
-  };
-  if (appTitle) appTitle.textContent = retroInfo.wen;
+  // Dynamically derive retro header and subtitle directly from amendment name
+  const cleanBase = amendment.name.replace(/V\d+(_\d+)?$/i, '');
+  const wenTitle = `wen ${cleanBase.toLowerCase()}?`;
+  const featureTitle = amendment.name.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase();
+
+  if (appTitle) appTitle.textContent = wenTitle;
   if (subtitleXls) subtitleXls.textContent = amendment.xls ? amendment.xls.replace('-', '') : 'XRPL';
-  if (subtitleFeature) subtitleFeature.textContent = retroInfo.title;
+  if (subtitleFeature) subtitleFeature.textContent = featureTitle;
 
   // Update dropdown button header
   selectedFeatureName.textContent = amendment.name;
@@ -380,12 +367,10 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
     validatorFeatureSub.textContent = `${amendment.name}${amendment.xls ? ` (${amendment.xls})` : ''}`;
   }
   
-  const info = FEATURE_INFO[amendment.name];
-  if (info) {
-    featureDescription.textContent = `${info.summary} ${info.impact}`;
-  } else {
-    featureDescription.textContent = `XRPL protocol amendment ${amendment.name}. Requires 80%+1 validator consensus for 14 continuous days.`;
-  }
+  // Dynamically generate feature description purely from live API metadata
+  const xlsDesc = amendment.xls ? `(${amendment.xls}) ` : '';
+  const verDesc = amendment.introduced ? `Introduced in xrpld v${amendment.introduced}. ` : '';
+  featureDescription.textContent = `XRPL protocol amendment ${amendment.name} ${xlsDesc}. ${verDesc}Requires 80%+1 (28/35) validator consensus sustained for 14 continuous days to activate on Mainnet.`;
 
   const reqVer = amendment.introduced || '3.3.0';
 
