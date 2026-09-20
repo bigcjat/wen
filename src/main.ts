@@ -1,11 +1,12 @@
 import './style.css';
 import type { RawAmendment, DetailedAmendment, EnrichedValidator } from './types';
-import { fetchAllAmendments, fetchAmendmentDetails, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
+import { fetchAllAmendments, fetchAmendmentDetails, fetchAmendmentDescriptions, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
 import { getFaviconCandidates, getFallbackMonogram } from './services/favicon';
 import { fireConfetti } from './services/confetti';
 
 // App State
 let activeAmendments: RawAmendment[] = [];
+let amendmentDescriptions: Record<string, string> = {};
 let selectedAmendment: RawAmendment | null = null;
 let currentDetails: DetailedAmendment | null = null;
 let currentValidators: EnrichedValidator[] = [];
@@ -32,8 +33,6 @@ const btnShare = document.getElementById('btnShare') as HTMLButtonElement;
 const shareBtnIcon = document.getElementById('shareBtnIcon') as HTMLSpanElement;
 const shareBtnText = document.getElementById('shareBtnText') as HTMLSpanElement;
 const featureSpecBtn = document.getElementById('featureSpecBtn') as HTMLAnchorElement;
-const featureStatusPill = document.getElementById('featureStatusPill') as HTMLSpanElement;
-const featureStatusText = document.getElementById('featureStatusText') as HTMLSpanElement;
 const featureDescription = document.getElementById('featureDescription') as HTMLParagraphElement;
 
 const voteCount = document.getElementById('voteCount') as HTMLSpanElement;
@@ -110,7 +109,12 @@ async function init() {
   setupEventListeners();
 
   try {
-    activeAmendments = await fetchAllAmendments();
+    const [amendments, descs] = await Promise.all([
+      fetchAllAmendments(),
+      fetchAmendmentDescriptions().catch(() => ({} as Record<string, string>))
+    ]);
+    activeAmendments = amendments;
+    amendmentDescriptions = descs;
   } catch (err) {
     console.error('Failed to load live amendments', err);
     displayFatalError(err);
@@ -354,10 +358,15 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
     validatorFeatureSub.textContent = `${amendment.name}${amendment.xls ? ` (${amendment.xls})` : ''}`;
   }
   
-  // Dynamically generate feature description purely from live API metadata
-  const xlsDesc = amendment.xls ? `(${amendment.xls}) ` : '';
-  const verDesc = amendment.introduced ? `Introduced in xrpld v${amendment.introduced}. ` : '';
-  featureDescription.textContent = `XRPL protocol amendment ${amendment.name} ${xlsDesc}. ${verDesc}Requires 80%+1 (28/35) validator consensus sustained for 14 continuous days to activate on Mainnet.`;
+  // Feature description: short, plain-English summary (single paragraph, max 1-2 sentences)
+  const customDesc = amendmentDescriptions[amendment.name];
+  if (customDesc) {
+    featureDescription.textContent = customDesc;
+  } else {
+    const xlsDesc = amendment.xls ? ` (${amendment.xls})` : '';
+    const verDesc = amendment.introduced ? ` Introduced in xrpld v${amendment.introduced}.` : '';
+    featureDescription.textContent = `XRPL protocol amendment ${amendment.name}${xlsDesc}.${verDesc}`;
+  }
 
   const reqVer = amendment.introduced || '3.3.0';
 
@@ -501,8 +510,6 @@ function updateProgressAndStatus() {
     percentageDisplay.textContent = '100% YES';
     progressFill.className = 'retro-fill just-activated';
 
-    featureStatusPill.className = 'status-pill just-activated';
-    featureStatusText.textContent = '🎉 JUST ACTIVATED (<48H)';
     statusCallout.className = 'status-callout activating';
     calloutIcon.textContent = '🎊';
     calloutTitle.textContent = '🎉 Amendment Officially Activated on Mainnet!';
@@ -522,10 +529,7 @@ function updateProgressAndStatus() {
       progressFill.className = 'retro-fill';
     }
 
-    // Update Status Pill
     if (isActivating) {
-      featureStatusPill.className = 'status-pill activating';
-      featureStatusText.textContent = 'ACTIVATING (14-DAY COUNTDOWN)';
       statusCallout.className = 'status-callout activating';
       calloutIcon.textContent = '⚡';
       calloutTitle.textContent = 'Majority Achieved: Activation Countdown Active';
@@ -533,8 +537,6 @@ function updateProgressAndStatus() {
       countdownBox.style.display = 'flex';
       startCountdown(majority!);
     } else {
-      featureStatusPill.className = 'status-pill voting';
-      featureStatusText.textContent = 'VOTING IN PROGRESS';
       statusCallout.className = 'status-callout voting';
       calloutIcon.textContent = '🗳️';
       

@@ -68,6 +68,69 @@ export async function fetchAllAmendments(): Promise<RawAmendment[]> {
   return filtered;
 }
 
+let cachedDescriptions: Record<string, string> | null = null;
+
+function cleanShortDescription(rawText: string): string {
+  let text = rawText
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\[([^\]]+)\]\[\]/g, '$1')
+    .replace(/\[([^\]]+)\]/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // If text starts with "This amendment is a collection of fixes...", condense cleanly
+  if (text.startsWith('This amendment is a collection of fixes')) {
+    const colonIdx = text.indexOf(':');
+    if (colonIdx !== -1) {
+      return text.slice(0, colonIdx) + '.';
+    }
+  }
+
+  // Extract up to the first 1-2 concise sentences (under ~180 characters)
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  let short = sentences[0] || text;
+  if (short.length < 90 && sentences.length > 1) {
+    short += ' ' + sentences[1];
+  }
+  return short.trim();
+}
+
+/**
+ * Dynamically fetches and parses official amendment descriptions from XRPLF known-amendments.md.
+ */
+export async function fetchAmendmentDescriptions(): Promise<Record<string, string>> {
+  if (cachedDescriptions) return cachedDescriptions;
+  try {
+    const resp = await fetch('https://raw.githubusercontent.com/XRPLF/xrpl-dev-portal/master/resources/known-amendments.md');
+    if (!resp.ok) return {};
+    const md = await resp.text();
+    const descriptions: Record<string, string> = {};
+    const sections = md.split(/^###\s+/m);
+
+    for (const sec of sections.slice(1)) {
+      const firstLine = sec.split('\n')[0].trim();
+      const name = firstLine.split(/\s+/)[0];
+      const parts = sec.split(/\|\s*\n\s*\n/);
+      if (parts.length > 1) {
+        let text = parts[1].trim();
+        text = text.split(/\n###|\n##/)[0].trim();
+        const short = cleanShortDescription(text);
+        if (short) {
+          descriptions[name] = short;
+        }
+      }
+    }
+    cachedDescriptions = descriptions;
+    return descriptions;
+  } catch (err) {
+    console.warn('Could not load dynamic amendment descriptions from xrpl-dev-portal', err);
+    return {};
+  }
+}
+
 /**
  * Fetch detailed amendment vote status
  */

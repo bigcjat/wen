@@ -564,10 +564,10 @@ body {
 }
 
 .feature-desc {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 2rem;
+  font-size: 0.94rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 1rem;
 }
 
 /* ----------------------------------
