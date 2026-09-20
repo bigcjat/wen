@@ -588,8 +588,9 @@ function renderValidators() {
 
     const info = document.createElement('div');
     info.className = 'val-info';
+    const displayDomain = formatValidatorName(val.domain);
     info.innerHTML = `
-      <span class="val-domain" title="${escapeHtml(val.domain)}">${escapeHtml(val.domain)}</span>
+      <span class="val-domain" title="${escapeHtml(val.domain)}">${escapeHtml(displayDomain)}</span>
       <span class="val-sub">dUNL Validator</span>
     `;
 
@@ -605,6 +606,16 @@ function renderValidators() {
 
     validatorGrid.appendChild(card);
   });
+}
+
+function formatValidatorName(domain: string): string {
+  if (!domain) return 'Unknown Validator';
+  const clean = domain.trim();
+  // Check if it's a raw master public key or long hash without domain dots
+  if (!clean.includes('.') && clean.length > 20) {
+    return `${clean.slice(0, 8)}...${clean.slice(-6)}`;
+  }
+  return clean;
 }
 
 function escapeHtml(str: string): string {
