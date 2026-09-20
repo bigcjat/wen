@@ -1,6 +1,6 @@
 import './style.css';
 import type { RawAmendment, DetailedAmendment, EnrichedValidator } from './types';
-import { fetchAllAmendments, fetchAmendmentDetails, FEATURE_INFO } from './services/api';
+import { fetchAllAmendments, fetchAmendmentDetails, FEATURE_INFO, getXlsUrl } from './services/api';
 import { getFaviconCandidates, getFallbackMonogram } from './services/favicon';
 import { fireConfetti } from './services/confetti';
 
@@ -23,7 +23,8 @@ const amendmentsOverviewGrid = document.getElementById('amendmentsOverviewGrid')
 const overviewBadge = document.getElementById('overviewBadge') as HTMLSpanElement;
 
 const featureHeadline = document.getElementById('featureHeadline') as HTMLHeadingElement;
-const featureXlsBadge = document.getElementById('featureXlsBadge') as HTMLSpanElement;
+const featureXlsBadge = document.getElementById('featureXlsBadge') as HTMLAnchorElement;
+const featureSpecBtn = document.getElementById('featureSpecBtn') as HTMLAnchorElement;
 const featureStatusPill = document.getElementById('featureStatusPill') as HTMLSpanElement;
 const featureStatusText = document.getElementById('featureStatusText') as HTMLSpanElement;
 const featureDescription = document.getElementById('featureDescription') as HTMLParagraphElement;
@@ -172,6 +173,7 @@ function renderOverviewGrid() {
     const badgeClass = isJustActivated ? 'just-activated' : (isActivating ? 'activating' : 'voting');
     const badgeText = isJustActivated ? '🎉 ACTIVATED' : (isActivating ? 'ACTIVATING' : 'VOTING');
     const isLongName = amendment.name.length > 18;
+    const specUrl = getXlsUrl(amendment) || 'https://github.com/XRPLF/XRPL-Standards/discussions';
 
     const card = document.createElement('div');
     card.className = `overview-card ${isSelected ? 'active' : ''}`;
@@ -179,7 +181,10 @@ function renderOverviewGrid() {
     card.innerHTML = `
       <div>
         <div class="ov-meta-row">
-          <span class="ov-sub">${amendment.xls ? escapeHtml(amendment.xls) : 'Protocol Patch'}</span>
+          <a href="${specUrl}" target="_blank" rel="noopener noreferrer" class="ov-sub-link" onclick="event.stopPropagation();" title="Open official ${amendment.xls || amendment.name} specification">
+            <span>${amendment.xls ? escapeHtml(amendment.xls) : 'Protocol Patch'}</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
           <span class="status-badge-small ${badgeClass}">
             ${badgeText}
           </span>
@@ -218,7 +223,25 @@ async function selectAmendment(amendment: RawAmendment) {
 
   // Update Hero Basic Info
   featureHeadline.textContent = amendment.name;
-  featureXlsBadge.textContent = amendment.xls || 'XRPL';
+
+  // Update XLS Spec Links
+  const specUrl = getXlsUrl(amendment) || 'https://github.com/XRPLF/XRPL-Standards/discussions';
+  if (featureXlsBadge) {
+    featureXlsBadge.href = specUrl;
+    featureXlsBadge.innerHTML = `
+      <span>${escapeHtml(amendment.xls || 'AMENDMENT')}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+    `;
+    featureXlsBadge.title = `Read official ${amendment.xls || amendment.name} specification`;
+  }
+
+  if (featureSpecBtn) {
+    featureSpecBtn.href = specUrl;
+    featureSpecBtn.innerHTML = `
+      <span>📖 Read Official ${escapeHtml(amendment.xls ? `${amendment.xls} Specification` : `${amendment.name} Docs`)}</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+    `;
+  }
 
   // Update Validator Section Header
   if (validatorFeatureName) {

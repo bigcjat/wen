@@ -1,6 +1,40 @@
 import type { RawAmendment, DetailedAmendment } from '../types';
 
+export const XLS_SPEC_MAP: Record<string, string> = {
+  'XLS-56': 'https://xls.xrpl.org/xls/XLS-0056-batch.html',
+  'XLS-75': 'https://xls.xrpl.org/xls/XLS-0075-permission-delegation.html',
+  'XLS-65': 'https://xls.xrpl.org/xls/XLS-0065-single-asset-vault.html',
+  'XLS-66': 'https://xls.xrpl.org/xls/XLS-0066-lending-protocol.html',
+  'XLS-68': 'https://xls.xrpl.org/xls/XLS-0068-sponsored-fees-and-reserves.html',
+  'XLS-94': 'https://xls.xrpl.org/xls/XLS-0094-dynamic-MPT.html',
+  'XLS-96': 'https://xls.xrpl.org/xls/XLS-0096-confidential-mpt.html',
+  'XLS-38': 'https://xls.xrpl.org/xls/XLS-0038-cross-chain-bridge.html',
+  'XLS-30': 'https://xls.xrpl.org/xls/XLS-0030-automated-market-maker.html',
+  'XLS-20': 'https://xls.xrpl.org/xls/XLS-0020-non-fungible-tokens.html',
+  'XLS-40': 'https://xls.xrpl.org/xls/XLS-0040-decentralized-identity.html',
+  'XLS-33': 'https://xls.xrpl.org/xls/XLS-0033-multi-purpose-tokens.html',
+  'XLS-47': 'https://xls.xrpl.org/xls/XLS-0047-PriceOracles.html',
+  'XLS-85': 'https://xls.xrpl.org/xls/XLS-0085-token-escrow.html',
+  'XLS-70': 'https://xls.xrpl.org/xls/XLS-0070-credentials.html',
+  'XLS-77': 'https://xls.xrpl.org/xls/XLS-0077-deep-freeze.html',
+  'XLS-80': 'https://xls.xrpl.org/xls/XLS-0080-permissioned-domains.html',
+  'XLS-81': 'https://xls.xrpl.org/xls/XLS-0081-permissioned-dex.html',
+  // Patch / cleanup fallback URLs
+  'fixCleanup3_4_0': 'https://github.com/XRPLF/rippled/releases/tag/3.4.0',
+  'fixXChainRewardRounding': 'https://github.com/XRPLF/rippled/releases'
+};
+
 const API_BASE = 'https://api.xrpscan.com/api/v1';
+
+/**
+ * Resolves the official XLS documentation or specification URL
+ */
+export function getXlsUrl(amendment: RawAmendment): string | null {
+  if (amendment.xls_url) return amendment.xls_url;
+  if (amendment.xls && XLS_SPEC_MAP[amendment.xls]) return XLS_SPEC_MAP[amendment.xls];
+  if (XLS_SPEC_MAP[amendment.name]) return XLS_SPEC_MAP[amendment.name];
+  return null;
+}
 
 export const FEATURE_INFO: Record<string, { summary: string; impact: string }> = {
   BatchV1_1: {
