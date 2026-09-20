@@ -762,13 +762,55 @@ function renderValidators() {
   });
 }
 
-function formatValidatorName(domain: string): string {
+const SUBDOMAIN_PREFIXES = [
+  'validator.xrpl.',
+  'xrpl.validator.',
+  'xrp-validator.',
+  'ripplevalidator.',
+  'validator.',
+  'xrpl.',
+  'ripple.'
+];
+
+function formatValidatorName(domain: string, maxLen = 22): string {
   if (!domain) return 'Unknown Validator';
-  const clean = domain.trim();
+  let clean = domain.trim();
+
   // Check if it's a raw master public key or long hash without domain dots
-  if (!clean.includes('.') && clean.length > 20) {
+  if (!clean.includes('.') && clean.length > 16) {
     return `${clean.slice(0, 8)}...${clean.slice(-6)}`;
   }
+
+  // Strip generic validator subdomains if present to preserve their root identity
+  const lower = clean.toLowerCase();
+  for (const prefix of SUBDOMAIN_PREFIXES) {
+    if (lower.startsWith(prefix)) {
+      const remainder = clean.slice(prefix.length);
+      // Ensure we don't reduce a domain to just a TLD (e.g. keep "ripple.com")
+      if (remainder.includes('.')) {
+        clean = remainder;
+      }
+      break;
+    }
+  }
+
+  // If still exceeding max length and truncation is required, truncate subdomains from start rather than cutting off the root domain
+  if (clean.length > maxLen && clean.includes('.')) {
+    const parts = clean.split('.');
+    if (parts.length > 2) {
+      const rootDomain = parts.slice(-2).join('.');
+      const sub = parts.slice(0, -2).join('.');
+      const availableSub = maxLen - rootDomain.length - 4;
+      if (availableSub > 2) {
+        clean = `${sub.slice(0, availableSub)}...${rootDomain}`;
+      } else {
+        clean = `...${rootDomain}`;
+      }
+    } else {
+      clean = `${clean.slice(0, maxLen - 3)}...`;
+    }
+  }
+
   return clean;
 }
 
