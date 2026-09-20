@@ -86,6 +86,45 @@ const validatorGrid = document.getElementById('validatorGrid') as HTMLDivElement
 const validatorFeatureName = document.getElementById('validatorFeatureName') as HTMLSpanElement;
 const validatorFeatureSub = document.getElementById('validatorFeatureSub') as HTMLSpanElement;
 
+function findAmendmentFromUrl(amendments: RawAmendment[]): RawAmendment | null {
+  const params = new URLSearchParams(window.location.search);
+  const xlsParam = params.get('xls') || params.get('XLS');
+  const amendmentParam = params.get('amendment') || params.get('feature') || params.get('name');
+  const hash = window.location.hash.replace(/^#/, '').trim();
+
+  // 1. Check XLS parameter (e.g. ?xls=56, ?xls=xls-56, ?XLS=56)
+  if (xlsParam) {
+    const cleanXls = xlsParam.toLowerCase().replace(/^xls-?/, '').trim();
+    const match = amendments.find((a) => {
+      if (!a.xls) return false;
+      const aXls = a.xls.toLowerCase().replace(/^xls-?/, '').trim();
+      return aXls === cleanXls;
+    });
+    if (match) return match;
+  }
+
+  // 2. Check amendment name parameter (e.g. ?amendment=batch, ?amendment=BatchV1_1)
+  if (amendmentParam) {
+    const cleanName = amendmentParam.toLowerCase();
+    const match = amendments.find(
+      (a) => a.name.toLowerCase() === cleanName || a.name.toLowerCase().startsWith(cleanName)
+    );
+    if (match) return match;
+  }
+
+  // 3. Check hash (e.g. #56, #xls-56, #batch)
+  if (hash) {
+    const cleanHash = hash.toLowerCase().replace(/^xls-?/, '').trim();
+    const match = amendments.find((a) => {
+      const aXls = a.xls ? a.xls.toLowerCase().replace(/^xls-?/, '').trim() : '';
+      return aXls === cleanHash || a.name.toLowerCase() === cleanHash || a.name.toLowerCase().startsWith(cleanHash);
+    });
+    if (match) return match;
+  }
+
+  return null;
+}
+
 // Initialization
 async function init() {
   setupEventListeners();
@@ -111,9 +150,9 @@ async function init() {
   renderPills();
   renderOverviewGrid();
 
-  // Prefer BatchV1_1 if available, otherwise first item
-  const initial = activeAmendments.find((a) => a.name === 'BatchV1_1') || activeAmendments[0];
-  await selectAmendment(initial);
+  // Select requested amendment from URL (?xls=56, ?amendment=name), otherwise fallback to BatchV1_1 or first item
+  const initial = findAmendmentFromUrl(activeAmendments) || activeAmendments.find((a) => a.name === 'BatchV1_1') || activeAmendments[0];
+  await selectAmendment(initial, false);
 }
 
 function setupEventListeners() {
@@ -136,6 +175,14 @@ function setupEventListeners() {
   tabAll.addEventListener('click', () => setValidatorFilter('ALL'));
   tabYea.addEventListener('click', () => setValidatorFilter('YEA'));
   tabNay.addEventListener('click', () => setValidatorFilter('NAY'));
+
+  // Browser Back / Forward navigation
+  window.addEventListener('popstate', () => {
+    const target = findAmendmentFromUrl(activeAmendments) || activeAmendments.find((a) => a.name === 'BatchV1_1') || activeAmendments[0];
+    if (target && target.name !== selectedAmendment?.name) {
+      selectAmendment(target, false);
+    }
+  });
 }
 
 function renderDropdownMenu() {
@@ -249,8 +296,27 @@ function renderOverviewGrid() {
   });
 }
 
-async function selectAmendment(amendment: RawAmendment) {
+async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
   selectedAmendment = amendment;
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    if (amendment.xls) {
+      const xlsNum = amendment.xls.replace(/^XLS-?/i, '');
+      url.searchParams.set('xls', xlsNum);
+      url.searchParams.delete('amendment');
+      url.searchParams.delete('feature');
+      url.searchParams.delete('name');
+    } else {
+      url.searchParams.set('amendment', amendment.name);
+      url.searchParams.delete('xls');
+      url.searchParams.delete('XLS');
+      url.searchParams.delete('feature');
+      url.searchParams.delete('name');
+    }
+    window.history.replaceState(null, '', url.toString());
+  }
+
   renderDropdownMenu();
   renderPills();
   renderOverviewGrid();
