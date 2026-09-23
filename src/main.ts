@@ -14,6 +14,17 @@ let currentVersionStats: VersionStats | null = null;
 let currentFilter: 'ALL' | 'YEA' | 'NAY' = 'ALL';
 let countdownInterval: number | null = null;
 
+/**
+ * Calculates the exact dynamic consensus threshold required for an amendment to trigger majority.
+ * In XRPL consensus, an amendment must receive support strictly greater than 80% (>80%, 80.01%+)
+ * of active UNL validators.
+ * Handles any UNL size dynamically, including adjustments when validators enter or leave the Negative UNL (nUNL).
+ */
+export function calculateConsensusThreshold(totalValidators: number): number {
+  if (totalValidators <= 0) return 0;
+  return Math.floor(totalValidators * 0.8) + 1;
+}
+
 // DOM Elements
 const appTitle = document.getElementById('appTitle') as HTMLHeadingElement;
 const titleWenTarget = document.getElementById('titleWenTarget') as HTMLSpanElement;
@@ -210,10 +221,16 @@ function renderDropdownMenu() {
     const badgeClass = isJustActivated ? 'just-activated' : (isActivating ? 'activating' : 'voting');
     const badgeText = isJustActivated ? '🎉 ACTIVATED' : (isActivating ? 'ACTIVATING' : 'VOTING');
 
+    const total = amendment.validations || (currentVersionStats?.totalUnl || 0);
+    const threshold = calculateConsensusThreshold(total);
+    const votesSub = total > 0
+      ? `${amendment.count}/${total} votes (${threshold} needed for >80%)`
+      : `${amendment.count} votes`;
+
     item.innerHTML = `
       <div class="item-main">
         <span class="item-name">${escapeHtml(amendment.name)}</span>
-        <span class="item-sub">${amendment.xls ? escapeHtml(amendment.xls) : 'Protocol Patch'} • ${amendment.count}/${amendment.threshold} votes</span>
+        <span class="item-sub">${amendment.xls ? escapeHtml(amendment.xls) : 'Protocol Patch'} • ${votesSub}</span>
       </div>
       <span class="status-badge-small ${badgeClass}">
         ${badgeText}
@@ -239,8 +256,10 @@ function renderOverviewGrid() {
     const isJustActivated = amendment.isJustActivated || amendment.enabled;
     const isActivating = amendment.majority != null && !isJustActivated;
     const count = amendment.count;
-    const total = amendment.validations || 35;
-    const pct = isJustActivated ? 100 : Math.round((count / total) * 1000) / 10;
+    const total = amendment.validations || (currentVersionStats?.totalUnl || 0);
+    const threshold = calculateConsensusThreshold(total);
+    const hasConsensus = threshold > 0 && count >= threshold;
+    const pct = isJustActivated ? 100 : (total > 0 ? Math.round((count / total) * 1000) / 10 : 0);
 
     const badgeClass = isJustActivated ? 'just-activated' : (isActivating ? 'activating' : 'voting');
     const badgeText = isJustActivated ? '🎉 ACTIVATED' : (isActivating ? 'ACTIVATING' : 'VOTING');
@@ -265,11 +284,11 @@ function renderOverviewGrid() {
           <div class="ov-name ${isLongName ? 'long-name' : ''}" title="${escapeHtml(amendment.name)}">${escapeHtml(amendment.name)}</div>
         </div>
         <div class="ov-tally">
-          <span class="ov-tally-num">${isJustActivated ? '35' : count} <span style="font-size: 0.72rem; color: var(--text-muted);">/ ${total}</span></span>
+          <span class="ov-tally-num">${isJustActivated ? total : count} <span style="font-size: 0.72rem; color: var(--text-muted);">${total > 0 ? `/ ${total}` : ''}</span></span>
           <span class="ov-pct">${pct}%</span>
         </div>
         <div class="ov-mini-track">
-          <div class="ov-mini-fill ${isJustActivated ? 'majority' : (pct >= 80 ? 'majority' : '')}" style="width: ${pct}%;"></div>
+          <div class="ov-mini-fill ${isJustActivated ? 'majority' : (hasConsensus ? 'majority' : '')}" style="width: ${pct}%;"></div>
         </div>
       </div>
     `;
@@ -399,7 +418,7 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       fillBars.forEach((b) => {
-        if (b) b.style.transition = 'width 1.2s steps(28, end)';
+        if (b) b.style.transition = 'width 1s cubic-bezier(0.16, 1, 0.3, 1)';
       });
       updateProgressAndStatus();
     });
@@ -414,12 +433,15 @@ function updateProgressAndStatus() {
 
   const reqVer = selectedAmendment.introduced || '3.3.0';
   const count = currentDetails?.count ?? selectedAmendment.count;
-  const total = currentDetails?.validations ?? selectedAmendment.validations ?? 35;
-  const threshold = currentDetails?.threshold ?? selectedAmendment.threshold ?? 28;
+  // Dynamic UNL size: pulled directly from live amendment validations or live UNL registry
+  const total = currentDetails?.validations ?? selectedAmendment.validations ?? (currentVersionStats?.totalUnl || 0);
+  // XRPL Consensus Protocol: Majority requires strictly > 80% (> 0.80) of active UNL validators.
+  // Dynamic threshold for any UNL size (including Negative UNL / nUNL adjustments):
+  const threshold = calculateConsensusThreshold(total);
   const majority = currentDetails?.majority ?? selectedAmendment.majority;
   const isJustActivated = selectedAmendment.isJustActivated || selectedAmendment.enabled;
 
-  const percentage = Math.round((count / total) * 1000) / 10;
+  const percentage = total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
   const isActivating = majority != null && !isJustActivated;
 
   // Update Bar 1: All Network Validators Version (matching screenshot top bar)
@@ -521,7 +543,9 @@ function updateProgressAndStatus() {
   } else {
     percentageDisplay.textContent = `${pctYea}% YES`;
 
-    if (percentage >= 80) {
+    const hasConsensus = threshold > 0 && count >= threshold;
+
+    if (hasConsensus || isActivating) {
       progressFill.className = 'retro-fill majority';
     } else {
       progressFill.className = 'retro-fill';
@@ -537,10 +561,13 @@ function updateProgressAndStatus() {
       statusCallout.className = 'status-callout voting';
       
       const needed = Math.max(0, threshold - count);
-      calloutTitle.textContent = needed > 0 
-        ? `Needs ${needed} More Vote${needed > 1 ? 's' : ''} to Reach 80% Consensus`
-        : 'At Threshold: Awaiting Flag Ledger';
-      calloutSubtitle.textContent = `Current tally is ${count} of ${total} validators. Once 28 votes (>80%) are maintained, a 14-day countdown begins.`;
+      if (needed > 0) {
+        calloutTitle.textContent = `Needs ${needed} More Vote${needed > 1 ? 's' : ''} to Reach >80% Consensus`;
+        calloutSubtitle.textContent = `Current tally is ${count} of ${total} validators (${percentage}%). Consensus requires strictly >80% (${threshold} of ${total} votes, 80.01%+) maintained for 14 continuous days.`;
+      } else {
+        calloutTitle.textContent = '>80% Achieved: Awaiting Flag Ledger';
+        calloutSubtitle.textContent = `Current tally is ${count} of ${total} validators (${percentage}%). >80% threshold reached! Awaiting next flag ledger to record majority and begin 14-day countdown.`;
+      }
       countdownBox.style.display = 'none';
       stopCountdown();
     }

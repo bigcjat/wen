@@ -565,7 +565,7 @@ body {
     #1b57ad 8px
   );
   border-radius: 2px;
-  transition: width 1.2s steps(28, end);
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 0 12px var(--accent-blue-glow);
   position: relative;
 }
@@ -741,7 +741,7 @@ body {
   position: absolute;
   top: 0;
   bottom: -24px;
-  left: 80%; /* 28/35 = 80% */
+  left: 80%; /* 80% consensus boundary */
   width: 0;
   border-left: 2.5px dashed #ffd700;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.9), 0 0 18px rgba(255, 215, 0, 0.4);
@@ -817,7 +817,7 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 80%; /* 28/35 = 80% */
+  left: 80%; /* 80% consensus boundary */
   width: 3px;
   background: #ffffff;
   box-shadow: 0 0 10px #ffffff, 0 0 18px var(--accent-blue);
