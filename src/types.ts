@@ -38,4 +38,14 @@ export interface EnrichedValidator {
   domain: string;
   status: VoteStatus;
   faviconUrl: string;
+  isUnl?: boolean;
+  version?: string;
+}
+
+export interface CommunityVoteStats {
+  total: number;
+  yea: number;
+  nay: number;
+  pct: number;
+  validators: EnrichedValidator[];
 }

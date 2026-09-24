@@ -813,6 +813,72 @@ body {
   }
 }
 
+/* ----------------------------------
+   COMMUNITY (NON-UNL) VALIDATOR SENTIMENT
+----------------------------------- */
+.community-sentiment-block {
+  margin-top: 1.8rem;
+  padding: 1rem 1.25rem;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px dashed rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.community-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-pixel);
+  font-size: clamp(0.68rem, 1.8vw, 0.82rem);
+  letter-spacing: -0.01em;
+}
+
+.community-tag {
+  font-family: var(--font-pixel);
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+}
+
+.community-frame {
+  margin-top: 0.65rem;
+  height: 28px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.community-yes {
+  background: linear-gradient(90deg, #9333ea, #a855f7) !important;
+  color: #ffffff;
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
+.community-no {
+  background: rgba(30, 41, 59, 0.85) !important;
+  color: #94a3b8;
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+}
+
+.community-subtext {
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-silkscreen);
+  line-height: 1.4;
+}
+
 .consensus-marker {
   position: absolute;
   top: 0;
@@ -969,6 +1035,68 @@ body {
   box-shadow: 0 0 12px var(--accent-cyan-glow);
   display: inline-block;
   vertical-align: middle;
+}
+
+.validator-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.cohort-group {
+  display: flex;
+  background: rgba(15, 23, 42, 0.85);
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.cohort-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cohort-btn:hover {
+  color: var(--text-primary);
+}
+
+.cohort-btn.active {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+}
+
+.cohort-badge-tag {
+  font-family: var(--font-pixel);
+  font-size: 0.52rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  margin-right: 0.4rem;
+}
+
+.cohort-badge-tag.unl {
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+}
+
+.cohort-badge-tag.community {
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
 }
 
 .tab-group {
@@ -1229,6 +1357,28 @@ body {
 
 .ov-mini-fill.majority {
   background: linear-gradient(90deg, #059669, var(--accent-emerald));
+}
+
+.ov-comm-row {
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  font-family: var(--font-silkscreen);
+  color: var(--text-muted);
+}
+
+.ov-comm-label {
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.ov-comm-val {
+  color: #c084fc;
+  font-weight: 700;
 }
 
 /* ----------------------------------

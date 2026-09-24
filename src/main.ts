@@ -1,6 +1,16 @@
 import './style.css';
 import type { RawAmendment, DetailedAmendment, EnrichedValidator } from './types';
-import { fetchAllAmendments, fetchAmendmentDetails, fetchAmendmentDescriptions, getXlsUrl, calculateVersionStats, type VersionStats } from './services/api';
+import { 
+  fetchAllAmendments, 
+  fetchAmendmentDetails, 
+  fetchAmendmentDescriptions, 
+  fetchValidatorRegistry,
+  computeCommunityVotes,
+  getXlsUrl, 
+  calculateVersionStats, 
+  type VersionStats,
+  type ValidatorRegistryEntry 
+} from './services/api';
 import { getFaviconCandidates, getFallbackMonogram } from './services/favicon';
 import { fireConfetti } from './services/confetti';
 
@@ -10,6 +20,10 @@ let amendmentDescriptions: Record<string, string> = {};
 let selectedAmendment: RawAmendment | null = null;
 let currentDetails: DetailedAmendment | null = null;
 let currentValidators: EnrichedValidator[] = [];
+let currentUnlValidators: EnrichedValidator[] = [];
+let currentCommunityValidators: EnrichedValidator[] = [];
+let cachedValidatorRegistry: ValidatorRegistryEntry[] = [];
+let currentCohort: 'UNL' | 'COMMUNITY' = 'UNL';
 let currentVersionStats: VersionStats | null = null;
 let currentFilter: 'ALL' | 'YEA' | 'NAY' = 'ALL';
 let countdownInterval: number | null = null;
@@ -84,6 +98,17 @@ const validatorGrid = document.getElementById('validatorGrid') as HTMLDivElement
 const validatorFeatureName = document.getElementById('validatorFeatureName') as HTMLSpanElement;
 const validatorFeatureSub = document.getElementById('validatorFeatureSub') as HTMLSpanElement;
 
+// Community & Cohort Elements
+const communitySentimentMetric = document.getElementById('communitySentimentMetric') as HTMLSpanElement;
+const communitySegmentYes = document.getElementById('communitySegmentYes') as HTMLDivElement;
+const communitySegmentNo = document.getElementById('communitySegmentNo') as HTMLDivElement;
+
+const validatorCohortSubtitle = document.getElementById('validatorCohortSubtitle') as HTMLSpanElement;
+const btnCohortUnl = document.getElementById('btnCohortUnl') as HTMLButtonElement;
+const btnCohortCommunity = document.getElementById('btnCohortCommunity') as HTMLButtonElement;
+const unlCohortCount = document.getElementById('unlCohortCount') as HTMLSpanElement;
+const communityCohortCount = document.getElementById('communityCohortCount') as HTMLSpanElement;
+
 function findAmendmentFromUrl(amendments: RawAmendment[]): RawAmendment | null {
   const params = new URLSearchParams(window.location.search);
   // Support ?XLS or ?xls or ?amendment or ?feature or #hash
@@ -119,12 +144,14 @@ async function init() {
   setupEventListeners();
 
   try {
-    const [amendments, descs] = await Promise.all([
+    const [amendments, descs, registry] = await Promise.all([
       fetchAllAmendments(),
-      fetchAmendmentDescriptions().catch(() => ({} as Record<string, string>))
+      fetchAmendmentDescriptions().catch(() => ({} as Record<string, string>)),
+      fetchValidatorRegistry().catch(() => [] as ValidatorRegistryEntry[])
     ]);
     activeAmendments = amendments;
     amendmentDescriptions = descs;
+    cachedValidatorRegistry = registry;
   } catch (err) {
     console.error('Failed to load live amendments', err);
     displayFatalError(err);
@@ -163,6 +190,10 @@ function setupEventListeners() {
     dropdownTrigger.classList.remove('open');
     dropdownTrigger.setAttribute('aria-expanded', 'false');
   });
+
+  // Cohort switching (UNL vs Community)
+  if (btnCohortUnl) btnCohortUnl.addEventListener('click', () => setValidatorCohort('UNL'));
+  if (btnCohortCommunity) btnCohortCommunity.addEventListener('click', () => setValidatorCohort('COMMUNITY'));
 
   // Tab filtering
   tabAll.addEventListener('click', () => setValidatorFilter('ALL'));
@@ -269,6 +300,8 @@ function renderOverviewGrid() {
     const card = document.createElement('div');
     card.className = `overview-card ${isSelected ? 'active' : ''}`;
 
+    const comm = computeCommunityVotes(amendment.amendment_id, cachedValidatorRegistry);
+
     card.innerHTML = `
       <div>
         <div class="ov-meta-row">
@@ -284,11 +317,15 @@ function renderOverviewGrid() {
           <div class="ov-name ${isLongName ? 'long-name' : ''}" title="${escapeHtml(amendment.name)}">${escapeHtml(amendment.name)}</div>
         </div>
         <div class="ov-tally">
-          <span class="ov-tally-num">${isJustActivated ? total : count} <span style="font-size: 0.72rem; color: var(--text-muted);">${total > 0 ? `/ ${total}` : ''}</span></span>
+          <span class="ov-tally-num">UNL: ${isJustActivated ? total : count} <span style="font-size: 0.72rem; color: var(--text-muted);">${total > 0 ? `/ ${total}` : ''}</span></span>
           <span class="ov-pct">${pct}%</span>
         </div>
         <div class="ov-mini-track">
           <div class="ov-mini-fill ${isJustActivated ? 'majority' : (hasConsensus ? 'majority' : '')}" style="width: ${pct}%;"></div>
+        </div>
+        <div class="ov-comm-row">
+          <span class="ov-comm-label">COMMUNITY:</span>
+          <span class="ov-comm-val">${comm.total > 0 ? `${comm.yea}/${comm.total} (${comm.pct}% YES)` : '--'}</span>
         </div>
       </div>
     `;
@@ -407,7 +444,7 @@ async function selectAmendment(amendment: RawAmendment, updateUrl = true) {
   }
 
   // Trigger pixel-by-pixel stepped arcade filling animation
-  const fillBars = [retroBar1Fill, retroNodesFill, progressFill, segmentYes, segmentNo, segmentUnvoted];
+  const fillBars = [retroBar1Fill, retroNodesFill, progressFill, segmentYes, segmentNo, segmentUnvoted, communitySegmentYes, communitySegmentNo];
   fillBars.forEach((b) => {
     if (b) {
       b.style.transition = 'none';
@@ -518,6 +555,35 @@ function updateProgressAndStatus() {
     }
   }
 
+  // Update Community Sentiment Bar
+  const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry);
+  if (communitySentimentMetric) {
+    communitySentimentMetric.textContent = `${commStats.pct}% YES (${commStats.yea}/${commStats.total})`;
+  }
+  if (communitySegmentYes) {
+    if (commStats.pct > 0) {
+      communitySegmentYes.style.display = 'flex';
+      communitySegmentYes.style.width = `${commStats.pct}%`;
+      communitySegmentYes.textContent = commStats.pct >= 14 ? `YES (${commStats.pct}%)` : (commStats.pct > 0 ? `${commStats.pct}%` : '');
+    } else {
+      communitySegmentYes.style.display = 'none';
+      communitySegmentYes.style.width = '0%';
+      communitySegmentYes.textContent = '';
+    }
+  }
+  if (communitySegmentNo) {
+    const nayPct = Math.max(0, Math.round((100 - commStats.pct) * 10) / 10);
+    if (nayPct > 0) {
+      communitySegmentNo.style.display = 'flex';
+      communitySegmentNo.style.width = `${nayPct}%`;
+      communitySegmentNo.textContent = nayPct >= 14 ? `NO (${nayPct}%)` : (nayPct > 0 ? `${nayPct}%` : '');
+    } else {
+      communitySegmentNo.style.display = 'none';
+      communitySegmentNo.style.width = '0%';
+      communitySegmentNo.textContent = '';
+    }
+  }
+
   if (blockedVersionTag) {
     blockedVersionTag.textContent = `Ver ${reqVer}`;
   }
@@ -625,38 +691,63 @@ function stopCountdown() {
 
 function processValidators() {
   if (!currentDetails) {
+    currentUnlValidators = [];
+    currentCommunityValidators = [];
     currentValidators = [];
     return;
   }
 
+  // 1. UNL Validators from currentDetails
   const voters = currentDetails.voters || [];
   const vetoers = currentDetails.vetoers || [];
 
-  const list: EnrichedValidator[] = [];
-
+  const unlList: EnrichedValidator[] = [];
   voters.forEach((v) => {
     const domain = v.domain || v.domain_legacy || (v.master_key ? v.master_key.slice(0, 16) : 'Unknown Validator');
-    list.push({
+    unlList.push({
       key: v.master_key || domain,
-      domain: domain,
+      domain,
       status: 'YEA',
-      faviconUrl: domain
+      faviconUrl: domain,
+      isUnl: true
     });
   });
-
   vetoers.forEach((v) => {
     const domain = v.domain || v.domain_legacy || (v.master_key ? v.master_key.slice(0, 16) : 'Unknown Validator');
-    list.push({
+    unlList.push({
       key: v.master_key || domain,
-      domain: domain,
+      domain,
       status: 'NAY',
-      faviconUrl: domain
+      faviconUrl: domain,
+      isUnl: true
     });
   });
+  unlList.sort((a, b) => a.domain.localeCompare(b.domain));
+  currentUnlValidators = unlList;
 
-  // Sort alphabetically by domain
-  list.sort((a, b) => a.domain.localeCompare(b.domain));
+  // 2. Community Validators from cachedValidatorRegistry
+  if (selectedAmendment) {
+    const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry);
+    currentCommunityValidators = commStats.validators;
+  } else {
+    currentCommunityValidators = [];
+  }
+
+  if (unlCohortCount) unlCohortCount.textContent = String(currentUnlValidators.length);
+  if (communityCohortCount) communityCohortCount.textContent = String(currentCommunityValidators.length);
+
+  updateActiveCohortList();
+}
+
+function updateActiveCohortList() {
+  const list = currentCohort === 'UNL' ? currentUnlValidators : currentCommunityValidators;
   currentValidators = list;
+
+  if (validatorCohortSubtitle) {
+    validatorCohortSubtitle.textContent = currentCohort === 'UNL'
+      ? 'Showing UNL consensus validator positions on '
+      : 'Showing non-UNL community validator positions on ';
+  }
 
   const yeaCount = list.filter((v) => v.status === 'YEA').length;
   const nayCount = list.filter((v) => v.status === 'NAY').length;
@@ -664,6 +755,21 @@ function processValidators() {
   countAll.textContent = String(list.length);
   countYea.textContent = String(yeaCount);
   countNay.textContent = String(nayCount);
+
+  renderValidators();
+}
+
+function setValidatorCohort(cohort: 'UNL' | 'COMMUNITY') {
+  currentCohort = cohort;
+  if (btnCohortUnl) {
+    btnCohortUnl.classList.toggle('active', cohort === 'UNL');
+    btnCohortUnl.setAttribute('aria-selected', String(cohort === 'UNL'));
+  }
+  if (btnCohortCommunity) {
+    btnCohortCommunity.classList.toggle('active', cohort === 'COMMUNITY');
+    btnCohortCommunity.setAttribute('aria-selected', String(cohort === 'COMMUNITY'));
+  }
+  updateActiveCohortList();
 }
 
 function setValidatorFilter(filter: 'ALL' | 'YEA' | 'NAY') {
@@ -734,9 +840,10 @@ function renderValidators() {
     const info = document.createElement('div');
     info.className = 'val-info';
     const displayDomain = formatValidatorName(val.domain);
+    const subText = val.isUnl ? 'dUNL Consensus' : (val.version ? `v${val.version}` : 'Independent');
     info.innerHTML = `
       <span class="val-domain" title="${escapeHtml(val.domain)}">${escapeHtml(displayDomain)}</span>
-      <span class="val-sub">dUNL Validator</span>
+      <span class="val-sub"><span class="cohort-badge-tag ${val.isUnl ? 'unl' : 'community'}">${val.isUnl ? 'UNL' : 'COMMUNITY'}</span>${escapeHtml(subText)}</span>
     `;
 
     left.appendChild(avatarFrame);

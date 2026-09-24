@@ -1,4 +1,4 @@
-import type { RawAmendment, DetailedAmendment } from '../types';
+import type { RawAmendment, DetailedAmendment, EnrichedValidator, CommunityVoteStats } from '../types';
 
 const API_BASE = 'https://api.xrpscan.com/api/v1';
 
@@ -137,11 +137,22 @@ export async function fetchAmendmentDescriptions(): Promise<Record<string, strin
 export interface ValidatorRegistryEntry {
   master_key: string;
   domain?: string;
+  domain_legacy?: string;
   server_version?: {
     version?: string;
     version_full?: string;
   };
   unl?: string[];
+  votes?: {
+    amendments?: string[];
+    base_fee?: number;
+    reserve_base?: number;
+    reserve_inc?: number;
+  };
+  meta?: {
+    verified?: boolean;
+    verification_message?: string;
+  };
 }
 
 export interface NodeEntry {
@@ -293,3 +304,36 @@ export async function fetchAmendmentDetails(name: string): Promise<DetailedAmend
   const data: DetailedAmendment = await resp.json();
   return data;
 }
+
+/**
+ * Computes non-UNL community validator vote support for a given amendment ID.
+ * Analyzes active independent validators casting validation votes outside the official UNL.
+ */
+export function computeCommunityVotes(amendmentId: string, registry: ValidatorRegistryEntry[]): CommunityVoteStats {
+  const activeCommunity = registry.filter(
+    (v) => (!v.unl || v.unl.length === 0) && v.votes && Array.isArray(v.votes.amendments) && v.votes.amendments.length > 0
+  );
+
+  const validators: EnrichedValidator[] = activeCommunity.map((v) => {
+    const isYea = v.votes?.amendments?.includes(amendmentId) ?? false;
+    const domain = v.domain || v.domain_legacy || (v.master_key ? v.master_key.slice(0, 16) : 'Community Validator');
+    return {
+      key: v.master_key || domain,
+      domain,
+      status: isYea ? 'YEA' : 'NAY',
+      faviconUrl: domain,
+      isUnl: false,
+      version: v.server_version?.version
+    };
+  });
+
+  validators.sort((a, b) => a.domain.localeCompare(b.domain));
+
+  const yea = validators.filter((v) => v.status === 'YEA').length;
+  const total = validators.length;
+  const nay = total - yea;
+  const pct = total > 0 ? Math.round((yea / total) * 1000) / 10 : 0;
+
+  return { total, yea, nay, pct, validators };
+}
+

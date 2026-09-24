@@ -94,6 +94,23 @@
                 <div class="retro-bracket-sub">(kept for 2 weeks)</div>
               </div>
             </div>
+            <!-- COMMUNITY (NON-UNL) VALIDATOR SENTIMENT -->
+            <div class="community-sentiment-block">
+              <div class="retro-bar-label">
+                <span class="community-title-wrap">
+                  <span class="community-tag">COMMUNITY</span>
+                  <span>Non-UNL Validator Sentiment</span>
+                </span>
+                <span id="communitySentimentMetric" class="retro-metric">--% YES (--/--)</span>
+              </div>
+              <div class="retro-bar-frame community-frame">
+                <div class="segment-yes community-yes" id="communitySegmentYes" style="width: 0%;" title="Community YES"></div>
+                <div class="segment-no community-no" id="communitySegmentNo" style="width: 0%;" title="Community NO"></div>
+              </div>
+              <div class="community-subtext">
+                Non-UNL independent validators signal broader ecosystem sentiment (does not count toward the official &gt;80% UNL activation threshold).
+              </div>
+            </div>
           </div>
         </div>
 
@@ -186,13 +203,22 @@
               Validator Votes for <span class="active-feature-highlight" id="validatorFeatureName">--</span>
             </h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
-              Showing all UNL validator positions on <span id="validatorFeatureSub">--</span>
+              <span id="validatorCohortSubtitle">Showing UNL consensus validator positions on </span><span id="validatorFeatureSub">--</span>
             </p>
           </div>
-          <div class="tab-group" role="tablist">
-            <button class="tab-btn active" id="tabAll" role="tab">All (<span id="countAll">-</span>)</button>
-            <button class="tab-btn" id="tabYea" role="tab">Yea (<span id="countYea">-</span>)</button>
-            <button class="tab-btn" id="tabNay" role="tab">Nay (<span id="countNay">-</span>)</button>
+          
+          <div class="validator-controls">
+            <!-- Cohort Switcher -->
+            <div class="cohort-group" role="tablist" aria-label="Validator Group">
+              <button class="cohort-btn active" id="btnCohortUnl" role="tab" aria-selected="true">UNL (<span id="unlCohortCount">-</span>)</button>
+              <button class="cohort-btn" id="btnCohortCommunity" role="tab" aria-selected="false">Community (<span id="communityCohortCount">-</span>)</button>
+            </div>
+            <!-- Vote Filter -->
+            <div class="tab-group" role="tablist" aria-label="Vote Filter">
+              <button class="tab-btn active" id="tabAll" role="tab">All (<span id="countAll">-</span>)</button>
+              <button class="tab-btn" id="tabYea" role="tab">Yea (<span id="countYea">-</span>)</button>
+              <button class="tab-btn" id="tabNay" role="tab">Nay (<span id="countNay">-</span>)</button>
+            </div>
           </div>
         </div>
 
