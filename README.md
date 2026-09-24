@@ -6,7 +6,7 @@
 
 ---
 
-A vibe-coded reimagining of the classic "wen mint?" XRPL tracker previously crafted by hand by [@bigcjat](https://github.com/bigcjat). Built with **TypeScript**, **Vite**, and authentic pixel-arcade styling inspired by retro 8-bit arcade machines.
+A vibe-coded reimagining of the classic "wen mint?" XRPL tracker previously crafted by hand by [@bigcjat](https://github.com/bigcjat). Built with **TypeScript**, **Vite**, and inspired by xJebzie.
 
 ---
 
