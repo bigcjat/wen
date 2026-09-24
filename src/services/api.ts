@@ -136,6 +136,7 @@ export async function fetchAmendmentDescriptions(): Promise<Record<string, strin
  */
 export interface ValidatorRegistryEntry {
   master_key: string;
+  chain?: string;
   domain?: string;
   domain_legacy?: string;
   server_version?: {
@@ -309,31 +310,49 @@ export async function fetchAmendmentDetails(name: string): Promise<DetailedAmend
  * Computes non-UNL community validator vote support for a given amendment ID.
  * Analyzes active independent validators casting validation votes outside the official UNL.
  */
-export function computeCommunityVotes(amendmentId: string, registry: ValidatorRegistryEntry[]): CommunityVoteStats {
-  const activeCommunity = registry.filter(
-    (v) => (!v.unl || v.unl.length === 0) && v.votes && Array.isArray(v.votes.amendments) && v.votes.amendments.length > 0
+export function computeCommunityVotes(
+  amendmentId: string, 
+  registry: ValidatorRegistryEntry[],
+  domainOnly: boolean = true
+): CommunityVoteStats {
+  // Filter for Mainnet non-UNL community validators (matching XRPScan's 183 total - 35 UNL = 148 community)
+  const mainnetCommunity = registry.filter(
+    (v) => (v.chain == null || v.chain === 'main') && (!v.unl || v.unl.length === 0)
   );
 
-  const validators: EnrichedValidator[] = activeCommunity.map((v) => {
+  const domainOnlyValidators = mainnetCommunity.filter((v) => Boolean(v.domain || v.domain_legacy));
+  const domainOnlyCount = domainOnlyValidators.length;
+  const allNodesCount = mainnetCommunity.length;
+
+  const targetList = domainOnly ? domainOnlyValidators : mainnetCommunity;
+
+  const validators: EnrichedValidator[] = targetList.map((v) => {
     const isYea = v.votes?.amendments?.includes(amendmentId) ?? false;
-    const domain = v.domain || v.domain_legacy || (v.master_key ? v.master_key.slice(0, 16) : 'Community Validator');
+    const rawDomain = v.domain || v.domain_legacy;
+    const domain = rawDomain || v.master_key || 'Anonymous Validator';
     return {
       key: v.master_key || domain,
       domain,
       status: isYea ? 'YEA' : 'NAY',
-      faviconUrl: domain,
+      faviconUrl: rawDomain || '',
       isUnl: false,
       version: v.server_version?.version
     };
   });
 
-  validators.sort((a, b) => a.domain.localeCompare(b.domain));
+  // Sort YEA first, then alphabetically by domain
+  validators.sort((a, b) => {
+    if (a.status === 'YEA' && b.status !== 'YEA') return -1;
+    if (a.status !== 'YEA' && b.status === 'YEA') return 1;
+    return a.domain.localeCompare(b.domain);
+  });
 
   const yea = validators.filter((v) => v.status === 'YEA').length;
   const total = validators.length;
   const nay = total - yea;
   const pct = total > 0 ? Math.round((yea / total) * 1000) / 10 : 0;
 
-  return { total, yea, nay, pct, validators };
+  return { total, yea, nay, pct, validators, domainOnlyCount, allNodesCount };
 }
+
 

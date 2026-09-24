@@ -95,20 +95,31 @@
               </div>
             </div>
             <!-- COMMUNITY (NON-UNL) VALIDATOR SENTIMENT -->
-            <div class="community-sentiment-block">
-              <div class="retro-bar-label">
+            <div class="retro-bar-block community-bar-block">
+              <div class="retro-bar-label community-bar-header">
                 <span class="community-title-wrap">
                   <span class="community-tag">COMMUNITY</span>
-                  <span>Non-UNL Validator Sentiment</span>
+                  <span>Non-UNL Sentiment</span>
                 </span>
-                <span id="communitySentimentMetric" class="retro-metric">--% YES (--/--)</span>
+
+                <!-- Domain Filter Toggle -->
+                <div class="domain-toggle-group" role="radiogroup" aria-label="Community Filter">
+                  <button class="domain-toggle-btn active" id="btnDomainOnly" title="Filter to identified validators with configured domains (ignores test and backup anon units)">
+                    Domains (<span id="domainOnlyCount">-</span>)
+                  </button>
+                  <button class="domain-toggle-btn" id="btnIncludeAnon" title="Show all registered network nodes including anonymous validators">
+                    All Nodes (<span id="allNodesCount">-</span>)
+                  </button>
+                </div>
+
+                <span id="communitySentimentMetric" class="retro-metric community-metric">--% YES (--/--)</span>
               </div>
-              <div class="retro-bar-frame community-frame">
+              <div class="retro-bar-frame segmented-frame">
                 <div class="segment-yes community-yes" id="communitySegmentYes" style="width: 0%;" title="Community YES"></div>
-                <div class="segment-no community-no" id="communitySegmentNo" style="width: 0%;" title="Community NO"></div>
+                <div class="segment-no" id="communitySegmentNo" style="width: 0%;" title="Community NO"></div>
               </div>
-              <div class="community-subtext">
-                Non-UNL independent validators signal broader ecosystem sentiment (does not count toward the official &gt;80% UNL activation threshold).
+              <div class="community-subtext" id="communitySubtext">
+                Showing identified community validators with configured domains (ignores test and backup anon units).
               </div>
             </div>
           </div>

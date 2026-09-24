@@ -48,4 +48,6 @@ export interface CommunityVoteStats {
   nay: number;
   pct: number;
   validators: EnrichedValidator[];
+  domainOnlyCount: number;
+  allNodesCount: number;
 }

@@ -26,6 +26,7 @@ let cachedValidatorRegistry: ValidatorRegistryEntry[] = [];
 let currentCohort: 'UNL' | 'COMMUNITY' = 'UNL';
 let currentVersionStats: VersionStats | null = null;
 let currentFilter: 'ALL' | 'YEA' | 'NAY' = 'ALL';
+let communityDomainOnly: boolean = true;
 let countdownInterval: number | null = null;
 
 /**
@@ -108,6 +109,13 @@ const btnCohortUnl = document.getElementById('btnCohortUnl') as HTMLButtonElemen
 const btnCohortCommunity = document.getElementById('btnCohortCommunity') as HTMLButtonElement;
 const unlCohortCount = document.getElementById('unlCohortCount') as HTMLSpanElement;
 const communityCohortCount = document.getElementById('communityCohortCount') as HTMLSpanElement;
+
+// Community Domain Filter Toggle Elements
+const btnDomainOnly = document.getElementById('btnDomainOnly') as HTMLButtonElement | null;
+const btnIncludeAnon = document.getElementById('btnIncludeAnon') as HTMLButtonElement | null;
+const domainOnlyCount = document.getElementById('domainOnlyCount') as HTMLSpanElement | null;
+const allNodesCount = document.getElementById('allNodesCount') as HTMLSpanElement | null;
+const communitySubtext = document.getElementById('communitySubtext') as HTMLDivElement | null;
 
 function findAmendmentFromUrl(amendments: RawAmendment[]): RawAmendment | null {
   const params = new URLSearchParams(window.location.search);
@@ -194,6 +202,30 @@ function setupEventListeners() {
   // Cohort switching (UNL vs Community)
   if (btnCohortUnl) btnCohortUnl.addEventListener('click', () => setValidatorCohort('UNL'));
   if (btnCohortCommunity) btnCohortCommunity.addEventListener('click', () => setValidatorCohort('COMMUNITY'));
+
+  // Community domain filter toggle (Domains Only vs All Nodes)
+  if (btnDomainOnly) {
+    btnDomainOnly.addEventListener('click', () => {
+      if (communityDomainOnly) return;
+      communityDomainOnly = true;
+      btnDomainOnly.classList.add('active');
+      btnIncludeAnon?.classList.remove('active');
+      updateProgressAndStatus();
+      processValidators();
+      renderOverviewGrid();
+    });
+  }
+  if (btnIncludeAnon) {
+    btnIncludeAnon.addEventListener('click', () => {
+      if (!communityDomainOnly) return;
+      communityDomainOnly = false;
+      btnIncludeAnon.classList.add('active');
+      btnDomainOnly?.classList.remove('active');
+      updateProgressAndStatus();
+      processValidators();
+      renderOverviewGrid();
+    });
+  }
 
   // Tab filtering
   tabAll.addEventListener('click', () => setValidatorFilter('ALL'));
@@ -300,7 +332,7 @@ function renderOverviewGrid() {
     const card = document.createElement('div');
     card.className = `overview-card ${isSelected ? 'active' : ''}`;
 
-    const comm = computeCommunityVotes(amendment.amendment_id, cachedValidatorRegistry);
+    const comm = computeCommunityVotes(amendment.amendment_id, cachedValidatorRegistry, communityDomainOnly);
 
     card.innerHTML = `
       <div>
@@ -556,7 +588,14 @@ function updateProgressAndStatus() {
   }
 
   // Update Community Sentiment Bar
-  const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry);
+  const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry, communityDomainOnly);
+  if (domainOnlyCount) domainOnlyCount.textContent = String(commStats.domainOnlyCount);
+  if (allNodesCount) allNodesCount.textContent = String(commStats.allNodesCount);
+  if (communitySubtext) {
+    communitySubtext.textContent = communityDomainOnly
+      ? 'Showing identified community validators with configured domains (ignores test and backup anon units).'
+      : 'Showing all registered mainnet community nodes, including anonymous/unverified units.';
+  }
   if (communitySentimentMetric) {
     communitySentimentMetric.textContent = `${commStats.pct}% YES (${commStats.yea}/${commStats.total})`;
   }
@@ -727,7 +766,7 @@ function processValidators() {
 
   // 2. Community Validators from cachedValidatorRegistry
   if (selectedAmendment) {
-    const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry);
+    const commStats = computeCommunityVotes(selectedAmendment.amendment_id, cachedValidatorRegistry, communityDomainOnly);
     currentCommunityValidators = commStats.validators;
   } else {
     currentCommunityValidators = [];
